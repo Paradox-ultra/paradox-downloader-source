@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fallback palette for Android 8-11 (Android 12+ uses wallpaper colours). -->
+    <color name="pd_primary">#2457C5</color>
+    <color name="pd_on_primary">#FFFFFF</color>
+    <color name="pd_primary_container">#DBE1FF</color>
+    <color name="pd_on_primary_container">#00174B</color>
+    <color name="pd_secondary">#585E71</color>
+    <color name="pd_secondary_container">#DCE2F9</color>
+    <color name="pd_on_secondary_container">#151B2C</color>
+    <color name="pd_tertiary">#735471</color>
+    <color name="pd_tertiary_container">#FFD7F6</color>
+    <color name="pd_on_tertiary_container">#2B122B</color>
+    <color name="pd_surface">#FAF9FE</color>
+    <color name="pd_surface_container">#EEEDF4</color>
+    <color name="pd_surface_container_high">#E8E7EF</color>
+    <color name="pd_surface_container_highest">#E3E2E9</color>
+    <color name="pd_on_surface">#1A1B21</color>
+    <color name="pd_on_surface_variant">#45464F</color>
+    <color name="pd_outline">#757680</color>
+</resources>

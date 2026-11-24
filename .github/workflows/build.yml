@@ -1,0 +1,97 @@
+name: Build APK
+# Builds and signs the release APK. With "publish" ticked, also uploads it to a
+# temporary link so the public repo's "Attach release asset" workflow can fetch it.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Upload the signed APK to a temporary link for publishing
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Prepare signing key
+        env:
+          KS_B64: ${{ secrets.PD_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.PD_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.PD_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.PD_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KS_B64" ]; then
+            echo "::warning::No signing key secrets: building an unsigned APK"
+            exit 0
+          fi
+          printf '%s' "$KS_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          {
+            echo "PD_KEYSTORE=$RUNNER_TEMP/release.jks"
+            echo "PD_KEYSTORE_PASSWORD=$KS_PASS"
+            echo "PD_KEY_ALIAS=$KEY_ALIAS"
+            echo "PD_KEY_PASSWORD=$KEY_PASS"
+          } >> "$GITHUB_ENV"
+
+      - name: Build
+        run: gradle :app:assembleRelease --stacktrace --no-daemon
+
+      - name: Name, verify and hash
+        id: apk
+        run: |
+          set -euo pipefail
+          src=$(ls app/build/outputs/apk/release/*.apk | head -1)
+          ver=$(grep -oP "versionName\s+'\K[^']+" app/build.gradle)
+          code=$(grep -oP "versionCode\s+\K\d+" app/build.gradle)
+          out="Paradox_Downloader_v${ver}.apk"
+          cp "$src" "$out"
+          bt=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$bt/apksigner" verify --print-certs "$out" | tee signer.txt || true
+          sha=$(sha256sum "$out" | cut -d' ' -f1)
+          echo "name=$out" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          {
+            echo "### $out"
+            echo "- versionCode: $code"
+            echo "- size: $(stat -c%s "$out") bytes"
+            echo "- SHA-256: \`$sha\`"
+            echo '```'; cat signer.txt; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.apk.outputs.name }}
+          path: ${{ steps.apk.outputs.name }}
+          retention-days: 14
+
+      - name: Upload to a temporary link
+        if: ${{ inputs.publish }}
+        env:
+          APK: ${{ steps.apk.outputs.name }}
+          SHA: ${{ steps.apk.outputs.sha }}
+        run: |
+          set -euo pipefail
+          url=$(curl -fsS --retry 3 -F "file=@$APK" https://tmpfiles.org/api/v1/upload | jq -r '.data.url')
+          echo "::notice title=Temporary APK link::$url"
+          echo "TMP_URL=$url SHA256=$SHA NAME=$APK"
+          echo "- Temporary link: $url" >> "$GITHUB_STEP_SUMMARY"

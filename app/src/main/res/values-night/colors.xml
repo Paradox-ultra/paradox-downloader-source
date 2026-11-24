@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="pd_primary">#B3C5FF</color>
+    <color name="pd_on_primary">#002B75</color>
+    <color name="pd_primary_container">#003FA4</color>
+    <color name="pd_on_primary_container">#DBE1FF</color>
+    <color name="pd_secondary">#C0C6DC</color>
+    <color name="pd_secondary_container">#404659</color>
+    <color name="pd_on_secondary_container">#DCE2F9</color>
+    <color name="pd_tertiary">#E1BBDC</color>
+    <color name="pd_tertiary_container">#5A3D58</color>
+    <color name="pd_on_tertiary_container">#FFD7F6</color>
+    <color name="pd_surface">#121318</color>
+    <color name="pd_surface_container">#1E1F25</color>
+    <color name="pd_surface_container_high">#292A2F</color>
+    <color name="pd_surface_container_highest">#34343A</color>
+    <color name="pd_on_surface">#E3E2E9</color>
+    <color name="pd_on_surface_variant">#C5C6D0</color>
+    <color name="pd_outline">#8F909A</color>
+</resources>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Paradox" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/pd_primary</item>
+        <item name="colorOnPrimary">@color/pd_on_primary</item>
+        <item name="colorPrimaryContainer">@color/pd_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/pd_on_primary_container</item>
+        <item name="colorSecondary">@color/pd_secondary</item>
+        <item name="colorSecondaryContainer">@color/pd_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/pd_on_secondary_container</item>
+        <item name="colorTertiary">@color/pd_tertiary</item>
+        <item name="colorTertiaryContainer">@color/pd_tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/pd_on_tertiary_container</item>
+        <item name="android:colorBackground">@color/pd_surface</item>
+        <item name="colorSurface">@color/pd_surface</item>
+        <item name="colorSurfaceContainer">@color/pd_surface_container</item>
+        <item name="colorSurfaceContainerHigh">@color/pd_surface_container_high</item>
+        <item name="colorSurfaceContainerHighest">@color/pd_surface_container_highest</item>
+        <item name="colorOnSurface">@color/pd_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/pd_on_surface_variant</item>
+        <item name="colorOutline">@color/pd_outline</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <style name="Paradox.ExtTile" parent="">
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/ext_tile</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.04</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+</resources>
