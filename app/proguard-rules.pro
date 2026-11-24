@@ -22,3 +22,11 @@
 -dontwarn okhttp3.**
 -dontwarn okio.**
 -ignorewarnings
+
+# youtubedl-android (yt-dlp): Kotlin + Jackson reflection over its mapper classes.
+-keep class com.yausername.** { *; }
+-keep class com.fasterxml.jackson.** { *; }
+-keepclassmembers class * { @com.fasterxml.jackson.annotation.* *; }
+-dontwarn com.fasterxml.jackson.**
+-dontwarn org.apache.commons.**
+-dontwarn kotlin.**

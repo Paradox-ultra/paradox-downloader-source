@@ -28,6 +28,8 @@ final class Job {
     String uri;        // saved file, once DONE
     String mime;
     long created;
+    String media;      // video/music spec (see Media); null for plain files
+    String stage;      // what a media job is doing right now ("Joining video and audio…")
 
     boolean active() {
         return QUEUED.equals(state) || CONNECTING.equals(state) || DOWNLOADING.equals(state);
@@ -51,6 +53,8 @@ final class Job {
         j.uri = uri;
         j.mime = mime;
         j.created = created;
+        j.media = media;
+        j.stage = stage;
         return j;
     }
 
@@ -71,6 +75,7 @@ final class Job {
         o.put("uri", uri);
         o.put("mime", mime);
         o.put("created", created);
+        o.put("media", media);
         return o;
     }
 
@@ -91,6 +96,7 @@ final class Job {
         j.uri = str(o, "uri");
         j.mime = str(o, "mime");
         j.created = o.optLong("created");
+        j.media = str(o, "media");
         return j;
     }
 
