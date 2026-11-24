@@ -17,7 +17,7 @@ import java.io.FileNotFoundException;
  * MediaStore Downloads doesn't exist. Read-only, single folder, no paths.
  */
 public final class FilesProvider extends ContentProvider {
-    static final String AUTHORITY = "bot.paradox.downloader.files";
+    static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".files";
 
     static Uri uriFor(File f) {
         return Uri.parse("content://" + AUTHORITY + "/" + Uri.encode(f.getName()));

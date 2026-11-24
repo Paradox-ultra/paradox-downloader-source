@@ -60,7 +60,7 @@
 
         <provider
             android:name=".FilesProvider"
-            android:authorities="bot.paradox.downloader.files"
+            android:authorities="${applicationId}.files"
             android:exported="false"
             android:grantUriPermissions="true" />
     </application>

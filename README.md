@@ -4,7 +4,7 @@ Private source for [Paradox Downloader](https://github.com/Paradox-ultra/paradox
 Rebuilt in v4.3 from the v4.2 release after the original source was lost; see
 [docs/AUDIT.md](docs/AUDIT.md) for what was fixed.
 
-- Package: `bot.paradox.downloader` · minSdk 26 · targetSdk 35 · Java 17
+- Package: `bot.paradox.downloader.app` (was `bot.paradox.downloader` up to v4.2) · minSdk 26 · targetSdk 35 · Java 17
 - UI: Material 3 (Material You colours on Android 12+), RecyclerView with DiffUtil
 - Video/audio sites: NewPipe Extractor (progressive streams)
 
