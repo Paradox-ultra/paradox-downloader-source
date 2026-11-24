@@ -78,7 +78,9 @@ jobs:
             echo '```'; cat signer.txt; echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
+      # Optional copy on the run page; skipped when the account's artifact storage is full.
       - uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: ${{ steps.apk.outputs.name }}
           path: ${{ steps.apk.outputs.name }}
