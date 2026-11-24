@@ -36,11 +36,26 @@ final class ChunkEngine {
     static final int PIECE = 2 * 1024 * 1024;
     private static final int ATTEMPTS = 5;
 
-    final AtomicBoolean stop = new AtomicBoolean();
+    /** Set by Pause/Cancel. Shared with the caller so one flag stops every stage of a job. */
+    final AtomicBoolean stop;
+    /** Set when one piece fails for good, to stop the others; unlike {@link #stop} it is not a pause. */
+    private final AtomicBoolean halt = new AtomicBoolean();
     final AtomicLong done = new AtomicLong();
     volatile long total = -1;
     /** True once a single-stream download has started; such downloads can't resume. */
     volatile boolean restartsOnResume;
+
+    ChunkEngine() {
+        this(new AtomicBoolean());
+    }
+
+    ChunkEngine(AtomicBoolean stop) {
+        this.stop = stop;
+    }
+
+    private boolean halted() {
+        return stop.get() || halt.get();
+    }
 
     void run(Http.Info info, File part, File journal, String key, int connections) throws Exception {
         if (info.ranges && info.size > 0) {
@@ -82,7 +97,7 @@ final class ChunkEngine {
                 for (int t = 0; t < threads; t++) {
                     futures.add(pool.submit(() -> {
                         byte[] buf = new byte[64 * 1024];
-                        while (!stop.get() && failure.get() == null) {
+                        while (!halted() && failure.get() == null) {
                             int idx = next.getAndIncrement();
                             if (idx >= pieces) return;
                             synchronized (journalLock) {
@@ -94,10 +109,10 @@ final class ChunkEngine {
                                 return;
                             } catch (Exception e) {
                                 failure.compareAndSet(null, e);
-                                stop.set(true);
+                                halt.set(true);
                                 return;
                             }
-                            if (stop.get()) return;
+                            if (halted()) return;
                             synchronized (journalLock) {
                                 have.set(idx);
                                 try {
@@ -142,7 +157,7 @@ final class ChunkEngine {
                 long pos = start;
                 try (InputStream in = c.getInputStream()) {
                     while (pos <= end) {
-                        if (stop.get()) return;
+                        if (halted()) return;
                         int want = (int) Math.min(buf.length, end - pos + 1);
                         int n = in.read(buf, 0, want);
                         if (n == -1) break;
@@ -158,7 +173,7 @@ final class ChunkEngine {
                 return;
             } catch (IOException e) {
                 done.addAndGet(-counted);
-                if (attempt >= ATTEMPTS || stop.get()) throw e;
+                if (attempt >= ATTEMPTS || halted()) throw e;
                 Thread.sleep(400L * attempt * attempt);
             } finally {
                 if (c != null) c.disconnect();

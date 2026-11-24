@@ -112,26 +112,53 @@ final class UpdateChecker {
             if (best != null && code <= best.code) continue;
             JSONArray assets = r.optJSONArray("assets");
             if (assets == null) continue;
+            // From v4.4 there is one APK per CPU type; take the one for this phone.
+            JSONObject chosen = null;
+            int chosenScore = -1;
             for (int k = 0; k < assets.length(); k++) {
                 JSONObject a = assets.optJSONObject(k);
                 if (a == null) continue;
                 String name = a.optString("name", "");
                 String url = a.optString("browser_download_url", "");
-                if (name.toLowerCase().endsWith(".apk")
-                        && url.startsWith("https://github.com/" + OWNER + "/" + REPO + "/releases/download/")) {
-                    Found f = new Found();
-                    f.code = code;
-                    f.apk = url;
-                    f.apkName = name;
-                    String title = r.optString("name", "").trim();
-                    f.name = title.isEmpty() || title.equals("null") ? r.optString("tag_name", "New version") : title;
-                    f.notes = notes(body, f.name);
-                    best = f;
-                    break;
+                if (!name.toLowerCase().endsWith(".apk")
+                        || !url.startsWith("https://github.com/" + OWNER + "/" + REPO + "/releases/download/")) continue;
+                int score = abiScore(name);
+                if (score > chosenScore) {
+                    chosen = a;
+                    chosenScore = score;
                 }
             }
+            if (chosen == null || chosenScore == 0) continue;
+            Found f = new Found();
+            f.code = code;
+            f.apk = chosen.optString("browser_download_url");
+            f.apkName = chosen.optString("name");
+            String title = r.optString("name", "").trim();
+            f.name = title.isEmpty() || title.equals("null") ? r.optString("tag_name", "New version") : title;
+            f.notes = notes(body, f.name);
+            best = f;
         }
         return best;
+    }
+
+    /**
+     * 3 = built for this phone's main CPU type, 2 = another type it can run,
+     * 1 = a universal APK, 0 = can't run here.
+     */
+    private static int abiScore(String name) {
+        String n = name.toLowerCase(java.util.Locale.ROOT);
+        String[] known = {"arm64-v8a", "armeabi-v7a", "x86_64", "x86"};
+        String tagged = null;
+        for (String abi : known) {
+            if (n.contains(abi)) {
+                tagged = abi;
+                break;
+            }
+        }
+        if (tagged == null) return 1;
+        String[] abis = android.os.Build.SUPPORTED_ABIS;
+        for (int i = 0; i < abis.length; i++) if (abis[i].equals(tagged)) return i == 0 ? 3 : 2;
+        return 0;
     }
 
     /** First few meaningful lines of the release notes, as plain text. */

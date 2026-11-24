@@ -178,6 +178,10 @@ final class JobAdapter extends ListAdapter<Job, JobAdapter.VH> {
             case Job.CONNECTING:
                 return "Connecting…";
             case Job.DOWNLOADING: {
+                // Video/music jobs: "Joining video and audio…", "Finding on YouTube Music…"
+                if (j.stage != null && !j.stage.isEmpty() && (j.speed <= 0 || j.total <= 0)) {
+                    return j.stage + (size != null && j.done > 0 ? " · " + Fmt.size(j.done) + " of " + size : "");
+                }
                 StringBuilder s = new StringBuilder(Fmt.size(j.done));
                 if (size != null) s.append(" of ").append(size);
                 s.append(" · ").append(Fmt.speed(j.speed));
@@ -215,7 +219,8 @@ final class JobAdapter extends ListAdapter<Job, JobAdapter.VH> {
 
         @Override
         public boolean areContentsTheSame(@NonNull Job a, @NonNull Job b) {
-            return sameLook(a, b) && a.done == b.done && a.total == b.total && a.speed == b.speed;
+            return sameLook(a, b) && a.done == b.done && a.total == b.total && a.speed == b.speed
+                    && Objects.equals(a.stage, b.stage);
         }
 
         @Override

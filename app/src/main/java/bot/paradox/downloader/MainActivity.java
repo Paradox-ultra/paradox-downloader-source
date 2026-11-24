@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -66,6 +67,9 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
     private AlertDialog busy;
     private Option pendingOption;
     private String pendingSource;
+    private List<org.json.JSONObject> pendingSpecs;
+    private List<String> pendingNames;
+    private TextView busyText;
     private String showJobId;
 
     private final ActivityResultLauncher<String> notifPermission =
@@ -73,8 +77,11 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
     private final ActivityResultLauncher<String> storagePermission =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
                 if (granted && pendingOption != null) enqueue(pendingOption, pendingSource);
+                else if (granted && pendingSpecs != null) enqueueMedia(pendingSpecs, pendingNames, pendingSource);
                 else if (!granted) toast("Storage access is needed to save files on this Android version");
                 pendingOption = null;
+                pendingSpecs = null;
+                pendingNames = null;
             });
 
     @Override
@@ -154,6 +161,9 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
         store.addListener(this);
         render();
         DownloadService.kick(this);
+        // Keep yt-dlp's site support fresh (at most once a day, in the background).
+        Context app = getApplicationContext();
+        new Thread(() -> Media.updateYtdlp(app), "ytdlp-update").start();
     }
 
     @Override
@@ -276,20 +286,111 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
     private void resolve(String source, Option mirror) {
         showBusy(mirror == null ? "Finding the file…" : "Opening " + mirror.label + "…");
         bg.execute(() -> {
+            if (mirror == null && media(source)) return;
             try {
                 List<Option> options = mirror == null ? Resolver.resolve(source) : Resolver.resolve(mirror);
+                if (mirror == null && options.isEmpty() && ytdlp(source)) return;
                 runOnUiThread(() -> {
                     hideBusy();
                     handle(source, options);
                 });
             } catch (Exception e) {
-                String msg = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
-                runOnUiThread(() -> {
-                    hideBusy();
-                    if (!isFinishing()) resolveFailed(source, msg);
-                });
+                if (mirror == null && ytdlp(source)) return;
+                failed(source, e);
             }
         });
+    }
+
+    /**
+     * Videos, music and playlists get the quality sheet. Runs on the background
+     * thread; returns true when it has taken care of the link.
+     */
+    private boolean media(String source) {
+        Media.Kind kind = Media.classify(source);
+        try {
+            switch (kind) {
+                case SPOTIFY: {
+                    busy("Reading the Spotify list…");
+                    Media.Playlist pl = Media.spotify(source);
+                    runOnUiThread(() -> showPlaylist(source, pl));
+                    return true;
+                }
+                case NP_PLAYLIST: {
+                    busy("Reading the playlist…");
+                    Media.Playlist pl = Media.newPipePlaylist(source);
+                    runOnUiThread(() -> showPlaylist(source, pl));
+                    return true;
+                }
+                case NP_STREAM: {
+                    busy("Getting video qualities…");
+                    try {
+                        Media.Probe p = Media.newPipe(source);
+                        runOnUiThread(() -> showProbe(source, p));
+                        return true;
+                    } catch (Exception e) {
+                        if (ytdlp(source)) return true;
+                        throw e;
+                    }
+                }
+                case YTDLP_FIRST:
+                    return ytdlp(source);
+                default:
+                    return false;
+            }
+        } catch (Exception e) {
+            failed(source, e);
+            return true;
+        }
+    }
+
+    /** Asks yt-dlp about the link; true if it found a video or audio. */
+    private boolean ytdlp(String source) {
+        busy("Looking for videos with yt-dlp…");
+        try {
+            Media.Probe p = Media.ytdlp(this, source);
+            runOnUiThread(() -> showProbe(source, p));
+            return true;
+        } catch (Throwable e) {
+            return false;
+        }
+    }
+
+    private void failed(String source, Exception e) {
+        String msg = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
+        runOnUiThread(() -> {
+            hideBusy();
+            if (!isFinishing()) resolveFailed(source, msg);
+        });
+    }
+
+    private void showProbe(String source, Media.Probe p) {
+        hideBusy();
+        if (isFinishing()) return;
+        MediaSheet.show(this, p, (specs, names) -> enqueueMedia(specs, names, source));
+    }
+
+    private void showPlaylist(String source, Media.Playlist pl) {
+        hideBusy();
+        if (isFinishing()) return;
+        MediaSheet.show(this, pl, (specs, names) -> enqueueMedia(specs, names, source));
+    }
+
+    private void enqueueMedia(List<org.json.JSONObject> specs, List<String> names, String source) {
+        if (Build.VERSION.SDK_INT < 29
+                && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            pendingSpecs = specs;
+            pendingNames = names;
+            pendingSource = source;
+            storagePermission.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            return;
+        }
+        for (int i = 0; i < specs.size(); i++) DownloadService.addMedia(this, specs.get(i), source, names.get(i));
+        input.setText("");
+        if (filter == FILTER_DONE) ((ChipGroup) findViewById(R.id.filters)).check(R.id.chip_all);
+        list.scrollToPosition(0);
+        String what = specs.size() == 1 ? names.get(0) : specs.size() + " items";
+        Snackbar.make(list, "Downloading " + (what == null ? "video" : what), Snackbar.LENGTH_SHORT).show();
+        askPermissionsOnce();
     }
 
     private void handle(String source, List<Option> options) {
@@ -549,8 +650,16 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
     private void showBusy(String text) {
         hideBusy();
         View v = LayoutInflater.from(this).inflate(R.layout.dialog_busy, null);
-        ((TextView) v.findViewById(R.id.busy_text)).setText(text);
+        busyText = v.findViewById(R.id.busy_text);
+        busyText.setText(text);
         busy = new MaterialAlertDialogBuilder(this).setView(v).setCancelable(false).show();
+    }
+
+    /** Updates the "working…" text from any thread. */
+    private void busy(String text) {
+        runOnUiThread(() -> {
+            if (busyText != null) busyText.setText(text);
+        });
     }
 
     private void hideBusy() {

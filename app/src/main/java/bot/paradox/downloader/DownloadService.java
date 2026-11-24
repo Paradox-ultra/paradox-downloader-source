@@ -24,6 +24,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.json.JSONObject;
 
 /**
  * Runs downloads in the background.
@@ -49,10 +52,36 @@ public final class DownloadService extends Service {
     private boolean ticking;
 
     private static final class Runner {
-        final ChunkEngine engine = new ChunkEngine();
+        /** One flag for every stage of the job, so Pause stops whichever is running. */
+        final AtomicBoolean stop = new AtomicBoolean();
+        final ChunkEngine engine = new ChunkEngine(stop);
+        final MediaWorker.Progress media = new MediaWorker.Progress(stop);
+        volatile boolean isMedia;
         long lastDone;
         long lastTime;
         double speed;
+
+        void halt(String id) {
+            stop.set(true);
+            if (isMedia) {
+                // yt-dlp runs as a separate process; end it off the main thread.
+                new Thread(() -> {
+                    try {
+                        com.yausername.youtubedl_android.YoutubeDL.getInstance().destroyProcessById(id);
+                    } catch (Throwable ignored) {
+                        // Not running.
+                    }
+                }).start();
+            }
+        }
+
+        long done() {
+            return isMedia ? media.done() : engine.done.get();
+        }
+
+        long total() {
+            return isMedia ? media.total() : engine.total;
+        }
     }
 
     // ---- public API ----------------------------------------------------------
@@ -67,6 +96,20 @@ public final class DownloadService extends Service {
         j.cookie = o.cookie;
         j.referer = o.referer;
         j.total = o.size;
+        j.created = System.currentTimeMillis();
+        JobStore.get(c).add(j);
+        send(c, A_ADD, j.id);
+        return j.id;
+    }
+
+    /** Queues a video, song or playlist track described by a {@link Media} spec. */
+    static String addMedia(Context c, JSONObject spec, String source, String name) {
+        Job j = new Job();
+        j.id = UUID.randomUUID().toString();
+        j.url = spec.optString("page", source);
+        j.source = source;
+        j.name = name;
+        j.media = spec.toString();
         j.created = System.currentTimeMillis();
         JobStore.get(c).add(j);
         send(c, A_ADD, j.id);
@@ -143,7 +186,7 @@ public final class DownloadService extends Service {
 
     @Override
     public void onDestroy() {
-        for (Runner r : running.values()) r.engine.stop.set(true);
+        for (Map.Entry<String, Runner> e : running.entrySet()) e.getValue().halt(e.getKey());
         releaseLocks();
         store.flush();
         pool.shutdownNow();
@@ -165,7 +208,7 @@ public final class DownloadService extends Service {
             return true;
         });
         Runner r = running.get(id);
-        if (r != null) r.engine.stop.set(true);
+        if (r != null) r.halt(id);
     }
 
     private void doResume(String id) {
@@ -179,7 +222,7 @@ public final class DownloadService extends Service {
 
     private void doCancel(String id) {
         Runner r = running.remove(id);
-        if (r != null) r.engine.stop.set(true);
+        if (r != null) r.halt(id);
         store.remove(id);
         deleteTemp(id);
         cancelNotice(id);
@@ -214,6 +257,10 @@ public final class DownloadService extends Service {
     // ---- the work --------------------------------------------------------------
 
     private void work(Job job, Runner r) {
+        if (job.media != null) {
+            workMedia(job, r);
+            return;
+        }
         String id = job.id;
         File part = partFile(id);
         File journal = new File(part.getPath() + ".journal");
@@ -255,7 +302,7 @@ public final class DownloadService extends Service {
         } catch (InterruptedException e) {
             // Paused or cancelled; the state was already set by doPause/doCancel.
         } catch (Exception e) {
-            if (r.engine.stop.get()) return;
+            if (r.stop.get()) return;
             String msg = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
             Job failed = store.update(id, j -> {
                 if (!j.active()) return false;
@@ -279,6 +326,85 @@ public final class DownloadService extends Service {
         }
     }
 
+    private void workMedia(Job job, Runner r) {
+        String id = job.id;
+        r.isMedia = true;
+        try {
+            JSONObject spec = new JSONObject(job.media);
+            Job started = store.update(id, j -> {
+                if (!Job.CONNECTING.equals(j.state)) return false;
+                j.state = Job.DOWNLOADING;
+                j.total = -1;
+                j.done = 0;
+                j.ranges = true; // media jobs always resume
+                return true;
+            });
+            if (started == null) return;
+            r.lastTime = System.currentTimeMillis();
+            MediaWorker.Stage stage = (text, name) -> store.update(id, j -> {
+                if (!Job.DOWNLOADING.equals(j.state)) return false;
+                j.stage = text;
+                if (name != null) {
+                    j.name = name;
+                    j.nameFixed = true;
+                }
+                return true;
+            });
+            MediaWorker.Result res = new MediaWorker(this, id, spec, r.media, stage).run();
+            if (store.find(id) == null) return; // cancelled while finishing
+            MediaWorker.cleanUp(this, id);
+            Job finished = store.update(id, j -> {
+                j.state = Job.DONE;
+                j.uri = res.uri.toString();
+                j.name = res.name;
+                j.mime = res.mime;
+                j.done = res.size;
+                j.total = res.size;
+                j.speed = 0;
+                j.stage = null;
+                j.error = null;
+                return true;
+            });
+            if (finished != null) main.post(() -> doneNotice(finished));
+        } catch (InterruptedException e) {
+            // Paused or cancelled.
+        } catch (Throwable e) {
+            if (r.stop.get()) return;
+            String msg = e.getMessage() == null || e.getMessage().trim().isEmpty()
+                    ? e.getClass().getSimpleName() : shortError(e.getMessage());
+            Job failed = store.update(id, j -> {
+                if (!j.active()) return false;
+                j.state = Job.FAILED;
+                j.error = msg;
+                j.speed = 0;
+                j.stage = null;
+                return true;
+            });
+            if (failed != null) main.post(() -> failNotice(failed));
+        } finally {
+            store.update(id, j -> {
+                if (j.stage == null || Job.DOWNLOADING.equals(j.state)) return false;
+                j.stage = null;
+                return true;
+            });
+            main.post(() -> {
+                if (running.get(id) == r) running.remove(id);
+                pump();
+            });
+        }
+    }
+
+    /** yt-dlp errors are long; keep the line that says what went wrong. */
+    private static String shortError(String m) {
+        String[] lines = m.trim().split("\n");
+        for (int i = lines.length - 1; i >= 0; i--) {
+            String l = lines[i].trim();
+            if (l.startsWith("ERROR:")) return l.substring(6).trim();
+        }
+        String last = lines[lines.length - 1].trim();
+        return last.length() > 300 ? last.substring(0, 300) + "…" : last;
+    }
+
     /** Adds an extension from the content type when the server's name has none. */
     private static String withExtension(String name, String type) {
         if (name == null) name = "download";
@@ -296,6 +422,7 @@ public final class DownloadService extends Service {
     }
 
     private void deleteTemp(String id) {
+        MediaWorker.cleanUp(this, id);
         File part = partFile(id);
         //noinspection ResultOfMethodCallIgnored
         part.delete();
@@ -321,8 +448,8 @@ public final class DownloadService extends Service {
         boolean unknown = false;
         for (Map.Entry<String, Runner> e : running.entrySet()) {
             Runner r = e.getValue();
-            long done = r.engine.done.get();
-            long total = r.engine.total;
+            long done = r.done();
+            long total = r.total();
             if (r.lastTime > 0) {
                 double dt = Math.max(1, now - r.lastTime) / 1000.0;
                 double inst = Math.max(0, (done - r.lastDone) / dt);
