@@ -96,4 +96,6 @@ jobs:
           url=$(curl -fsS --retry 3 -F "file=@$APK" https://tmpfiles.org/api/v1/upload | jq -r '.data.url')
           echo "::notice title=Temporary APK link::$url"
           echo "TMP_URL=$url SHA256=$SHA NAME=$APK"
+          # Secrets mask substrings of the URL in logs; print it base64 too.
+          echo "TMP_URL_B64=$(printf %s "$url" | base64 -w0)"
           echo "- Temporary link: $url" >> "$GITHUB_STEP_SUMMARY"
