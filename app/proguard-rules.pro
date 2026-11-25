@@ -28,5 +28,9 @@
 -keep class com.fasterxml.jackson.** { *; }
 -keepclassmembers class * { @com.fasterxml.jackson.annotation.* *; }
 -dontwarn com.fasterxml.jackson.**
+# The unzipper that unpacks Python/yt-dlp creates its zip "extra field" classes by
+# reflection; shrinking them breaks the first yt-dlp start (ExceptionInInitializerError).
+-keep class org.apache.commons.compress.** { *; }
+-keep class org.apache.commons.io.** { *; }
 -dontwarn org.apache.commons.**
 -dontwarn kotlin.**

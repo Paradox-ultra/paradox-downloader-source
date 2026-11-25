@@ -459,8 +459,13 @@ final class Media {
     static synchronized void ytdl(Context c) throws Exception {
         if (ytdlReady) return;
         Context app = c.getApplicationContext();
-        YoutubeDL.getInstance().init(app);
-        FFmpeg.getInstance().init(app);
+        try {
+            YoutubeDL.getInstance().init(app);
+            FFmpeg.getInstance().init(app);
+        } catch (Throwable t) {
+            // An Error here (e.g. a broken unzip) must fail the download, never crash the app.
+            throw new IOException("Couldn't start the video engine: " + t, t);
+        }
         ytdlReady = true;
     }
 
@@ -472,8 +477,8 @@ final class Media {
             ytdl(c);
             YoutubeDL.getInstance().updateYoutubeDL(c.getApplicationContext(), YoutubeDL.UpdateChannel._STABLE);
             Prefs.sp(c).edit().putLong("ytdlpUpdated", System.currentTimeMillis()).apply();
-        } catch (Exception ignored) {
-            // Try again next start.
+        } catch (Throwable ignored) {
+            // Try again next start; a background update must never crash the app.
         }
     }
 
