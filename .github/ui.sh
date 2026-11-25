@@ -5,8 +5,12 @@ PKG=bot.paradox.downloader.app
 mkdir -p shots
 n=0
 shot() { n=$((n+1)); adb exec-out screencap -p > "shots/$(printf %02d $n)-$1.png" 2>/dev/null; }
+# Only the app's own process counts: a Java crash names it after "Process:", a native one between
+# ">>> <<<". On the x86 emulator yt-dlp's ARM helper programs can't start, and the linker's message
+# mentions the app's folder without the app having crashed.
+CRASHED="Process: $PKG|>>> $PKG"
 check() {
-  if adb logcat -d -b crash | grep -q "$PKG"; then
+  if adb logcat -d -b crash | grep -qE "$CRASHED"; then
     echo "::error::app crashed after: $1"
     adb logcat -d -b crash | head -80
     shot "crash"
@@ -103,4 +107,4 @@ tap contains "ad blocker"; shot browser-shield; check "toggle blocker"
 adb shell input keyevent 4; sleep 2; check "leave browser"
 
 echo "=== done, no crash"
-adb logcat -d -b crash | grep "$PKG" || echo "crash buffer clean"
+adb logcat -d -b crash | grep -E "$CRASHED" || echo "no app crash in the crash buffer"
