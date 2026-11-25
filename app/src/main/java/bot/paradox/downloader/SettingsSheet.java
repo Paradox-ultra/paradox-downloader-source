@@ -59,6 +59,14 @@ final class SettingsSheet {
                     fill(a, sheet, rows);
                 }));
 
+        boolean fastest = !Prefs.flag(a, "noFastest");
+        row(a, rows, R.drawable.ic_bolt, "Pick the fastest server",
+                fastest ? "On · hub links with several servers are tested and the quickest is used"
+                        : "Off · you choose the server yourself", v -> {
+                    Prefs.flag(a, "noFastest", fastest);
+                    fill(a, sheet, rows);
+                });
+
         row(a, rows, R.drawable.ic_shield, "Browser ad blocker", AdBlock.summary(a), v -> adBlock(a, sheet, rows));
 
         boolean notif = a.getSystemService(NotificationManager.class).areNotificationsEnabled();

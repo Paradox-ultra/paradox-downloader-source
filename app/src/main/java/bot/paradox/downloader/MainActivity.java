@@ -370,6 +370,25 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
             try {
                 List<Option> options = mirror == null ? Resolver.resolve(source) : Resolver.resolve(mirror);
                 if (mirror == null && options.isEmpty() && ytdlp(source)) return;
+                // A hub page with several servers: test them all and take the quickest.
+                if (mirror == null && !Prefs.flag(this, "noFastest") && ServerRace.applies(options)) {
+                    ServerRace.Result best = ServerRace.run(options, this::busy);
+                    if (best != null) {
+                        runOnUiThread(() -> {
+                            hideBusy();
+                            enqueue(best.option, source);
+                            String host = "";
+                            try {
+                                host = new java.net.URL(best.option.url).getHost();
+                            } catch (Exception ignored) {
+                                // Show the speed without a name.
+                            }
+                            toast((best.tested > 1 ? "Fastest of " + best.tested + " servers: " : "Server: ") + host
+                                    + " · " + Fmt.speed(best.bytesPerSecond));
+                        });
+                        return;
+                    }
+                }
                 runOnUiThread(() -> {
                     hideBusy();
                     handle(source, options);
