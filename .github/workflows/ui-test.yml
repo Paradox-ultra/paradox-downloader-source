@@ -28,6 +28,10 @@ jobs:
             *) d="$U" ;;
           esac
           curl -fsSL -o app.apk "$d"
+          if head -c 512 app.apk | grep -qi '<html'; then
+            s=$(grep -oE 'https://tmpfiles\.org/dl/[0-9]+\.[0-9a-f]+/[^"<> ]+' app.apk | head -1)
+            curl -fsSL -o app.apk "$s"
+          fi
           [ "$(head -c 2 app.apk)" = "PK" ] && ls -la app.apk
       - name: Walk through the app
         uses: reactivecircus/android-emulator-runner@v2
