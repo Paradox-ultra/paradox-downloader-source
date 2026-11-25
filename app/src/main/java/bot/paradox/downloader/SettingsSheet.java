@@ -29,6 +29,22 @@ final class SettingsSheet {
 
     private static void fill(MainActivity a, BottomSheetDialog sheet, LinearLayout rows) {
         rows.removeAllViews();
+        int theme = Prefs.theme(a);
+        row(a, rows, R.drawable.ic_theme, "Theme", Prefs.THEME_NAMES[theme], v ->
+                new MaterialAlertDialogBuilder(a)
+                        .setTitle("Theme")
+                        .setSingleChoiceItems(Prefs.THEME_NAMES, theme, (d, w) -> {
+                            d.dismiss();
+                            if (w == theme) return;
+                            sheet.dismiss();
+                            Prefs.theme(a, w);
+                            int before = androidx.appcompat.app.AppCompatDelegate.getDefaultNightMode();
+                            Prefs.applyNightMode(a);
+                            // Dark <-> AMOLED keeps the same night mode, so redraw by hand.
+                            if (androidx.appcompat.app.AppCompatDelegate.getDefaultNightMode() == before) a.recreate();
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show());
         int conns = Prefs.connections(a);
         row(a, rows, R.drawable.ic_bolt, "Connections per download",
                 conns == 1 ? "1 · simplest, for picky servers" : conns + " · faster on most servers", v ->
@@ -58,7 +74,7 @@ final class SettingsSheet {
                     a.requestBatteryExemption();
                 });
 
-        row(a, rows, R.drawable.ic_folder, "Save location", "Download / Paradox Downloader", v -> {
+        row(a, rows, R.drawable.ic_folder, "Save location", "Download / " + Saver.FOLDER, v -> {
             try {
                 a.startActivity(new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS));
             } catch (Exception e) {

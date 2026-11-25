@@ -33,11 +33,11 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -61,7 +61,9 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
     private TextInputEditText input;
     private RecyclerView list;
     private View empty;
-    private TextView emptyTitle, emptyBody;
+    private TextView emptyTitle, emptyBody, stats;
+    private View tips;
+    private ExtendedFloatingActionButton fab;
     private Chip chipAll, chipActive, chipDone;
     private int filter = FILTER_ALL;
     private AlertDialog busy;
@@ -88,16 +90,17 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
     protected void onCreate(Bundle state) {
         EdgeToEdge.enable(this);
         super.onCreate(state);
+        Prefs.applyAmoled(this);
         setContentView(R.layout.activity_main);
         store = JobStore.get(this);
 
-        MaterialToolbar bar = findViewById(R.id.toolbar);
-        bar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_settings) {
-                SettingsSheet.show(this);
-                return true;
-            }
-            return false;
+        findViewById(R.id.settings).setOnClickListener(v -> SettingsSheet.show(this));
+        stats = findViewById(R.id.stats);
+        tips = findViewById(R.id.tips);
+        fab = findViewById(R.id.fab);
+        // One tap: take the link from the clipboard and start.
+        fab.setOnClickListener(v -> {
+            if (paste()) start();
         });
 
         inputLayout = findViewById(R.id.input_layout);
@@ -127,9 +130,16 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
         adapter = new JobAdapter(this);
         list.setAdapter(adapter);
         list.setItemAnimator(new SmoothAnimator());
+        list.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView rv, int dx, int dy) {
+                if (dy > 6 && fab.isExtended()) fab.shrink();
+                else if (dy < -6 && !fab.isExtended()) fab.extend();
+            }
+        });
         ViewCompat.setOnApplyWindowInsetsListener(list, (v, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
-            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), bars.bottom + dp(24));
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), bars.bottom + dp(96));
             return insets;
         });
 
@@ -195,16 +205,30 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
     private void render() {
         List<Job> all = store.snapshot();
         List<Job> shown = new ArrayList<>();
-        int active = 0, done = 0;
+        int active = 0, done = 0, running = 0;
+        long speed = 0;
         for (Job j : all) {
             boolean isDone = Job.DONE.equals(j.state);
             if (isDone) done++;
             else active++;
+            if (Job.DOWNLOADING.equals(j.state)) {
+                running++;
+                speed += j.speed;
+            }
             if (filter == FILTER_ALL || (filter == FILTER_DONE) == isDone) shown.add(j);
         }
         chipAll.setText(all.isEmpty() ? "All" : "All · " + all.size());
         chipActive.setText(active == 0 ? "In progress" : "In progress · " + active);
         chipDone.setText(done == 0 ? "Finished" : "Finished · " + done);
+        if (running > 0) {
+            stats.setText(running + (running == 1 ? " downloading · " : " downloading · ") + Fmt.speed(speed));
+        } else if (active > 0) {
+            stats.setText(active + (active == 1 ? " waiting" : " waiting or paused"));
+        } else if (done > 0) {
+            stats.setText(done + (done == 1 ? " file saved" : " files saved") + " · all done");
+        } else {
+            stats.setText("Ready when you are");
+        }
 
         adapter.submitList(shown, () -> {
             if (showJobId != null) {
@@ -218,16 +242,17 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
 
         boolean nothing = shown.isEmpty();
         empty.setVisibility(nothing ? View.VISIBLE : View.GONE);
+        tips.setVisibility(all.isEmpty() ? View.VISIBLE : View.GONE);
         if (nothing) {
             if (filter == FILTER_ACTIVE && !all.isEmpty()) {
                 emptyTitle.setText("Nothing in progress");
                 emptyBody.setText("Downloads you start will show here with live speed and progress.");
             } else if (filter == FILTER_DONE && !all.isEmpty()) {
                 emptyTitle.setText("No finished downloads yet");
-                emptyBody.setText("Finished files are saved in Download/Paradox Downloader.");
+                emptyBody.setText("Finished files are saved in Download/" + Saver.FOLDER + ".");
             } else {
                 emptyTitle.setText("No downloads yet");
-                emptyBody.setText("Paste a link above, or share one to Paradox Downloader from any app.");
+                emptyBody.setText("Paste a link above to get started.");
             }
         }
     }
@@ -259,17 +284,19 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
         return m.find() ? m.group().replaceAll("[),.;!?\\]]+$", "") : null;
     }
 
-    private void paste() {
+    /** Puts the clipboard's link in the box; false (with a message) if there is none. */
+    private boolean paste() {
         ClipboardManager cm = getSystemService(ClipboardManager.class);
         ClipData clip = cm == null ? null : cm.getPrimaryClip();
         CharSequence text = clip != null && clip.getItemCount() > 0 ? clip.getItemAt(0).coerceToText(this) : null;
         String url = firstLink(text == null ? null : text.toString());
         if (url == null) {
             toast(text == null ? "Clipboard is empty" : "No link in the clipboard");
-            return;
+            return false;
         }
         input.setText(url);
         input.setSelection(url.length());
+        return true;
     }
 
     // ---- resolving -------------------------------------------------------------------
@@ -471,7 +498,7 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
                     .setIcon(R.drawable.ic_battery)
                     .setTitle("Keep downloads running?")
                     .setMessage("So big downloads don't pause when you leave the app or the screen turns off, let "
-                            + "Paradox Downloader run in the background.")
+                            + "Downloader Ultra run in the background.")
                     .setPositiveButton("Allow", (d, w) -> requestBatteryExemption())
                     .setNegativeButton("Not now", null)
                     .show();
@@ -577,7 +604,7 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
             new MaterialAlertDialogBuilder(this)
                     .setIcon(R.drawable.ic_info)
                     .setTitle("Allow installing apps?")
-                    .setMessage("To install this APK, allow Paradox Downloader to install unknown apps, then tap Open again.")
+                    .setMessage("To install this APK, allow Downloader Ultra to install unknown apps, then tap Open again.")
                     .setPositiveButton("Allow", (d, w) -> startActivity(new Intent(
                             Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getPackageName()))))
                     .setNegativeButton("Not now", null)

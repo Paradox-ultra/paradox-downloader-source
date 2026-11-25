@@ -66,9 +66,9 @@ jobs:
           mkdir -p dist
           echo "### Paradox Downloader v${ver} (versionCode ${code})" >> "$GITHUB_STEP_SUMMARY"
           for src in app/build/outputs/apk/release/*.apk; do
-            # app-arm64-v8a-release.apk -> Paradox_Downloader_v4.4_arm64-v8a.apk
+            # app-arm64-v8a-release.apk -> Downloader_Ultra_v4.4_arm64-v8a.apk
             abi=$(basename "$src" .apk | sed -E 's/^app-//; s/-release(-unsigned)?$//; s/^release(-unsigned)?$//')
-            out="dist/Paradox_Downloader_v${ver}${abi:+_$abi}.apk"
+            out="dist/Downloader_Ultra_v${ver}${abi:+_$abi}.apk"
             cp "$src" "$out"
             "$bt/apksigner" verify --print-certs "$out" | tee "$out.signer" || true
             sha=$(sha256sum "$out" | cut -d' ' -f1)

@@ -13,7 +13,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 /**
- * Serves files saved in Download/Paradox Downloader on Android 8-9, where
+ * Serves files saved in Download/Downloader Ultra on Android 8-9, where
  * MediaStore Downloads doesn't exist. Read-only, single folder, no paths.
  */
 public final class FilesProvider extends ContentProvider {
@@ -24,7 +24,7 @@ public final class FilesProvider extends ContentProvider {
     }
 
     static File folder() {
-        return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "Paradox Downloader");
+        return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), Saver.FOLDER);
     }
 
     private File file(Uri uri) throws FileNotFoundException {

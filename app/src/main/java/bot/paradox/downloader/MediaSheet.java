@@ -9,6 +9,8 @@ import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
@@ -20,6 +22,8 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.color.MaterialColors;
+import com.google.android.material.imageview.ShapeableImageView;
+import com.google.android.material.shape.ShapeAppearanceModel;
 import com.google.android.material.radiobutton.MaterialRadioButton;
 
 import org.json.JSONObject;
@@ -51,7 +55,7 @@ final class MediaSheet {
         dialog = new BottomSheetDialog(a);
         box = new LinearLayout(a);
         box.setOrientation(LinearLayout.VERTICAL);
-        box.setPadding(dp(24), dp(8), dp(24), dp(16));
+        box.setPadding(dp(20), dp(4), dp(20), dp(20));
         ScrollView scroll = new ScrollView(a);
         scroll.addView(box);
         dialog.setContentView(scroll);
@@ -62,6 +66,7 @@ final class MediaSheet {
     /** One video or song. */
     static void show(Activity a, Media.Probe p, Go go) {
         MediaSheet s = new MediaSheet(a);
+        s.preview(p.thumb, Media.duration(p.duration));
         String meta = join(p.uploader, Media.duration(p.duration));
         s.header(p.title, meta.isEmpty() ? (p.engine.equals("yt") ? "Found by yt-dlp" : null) : meta);
         boolean hasVideo = !p.video.isEmpty(), hasAudio = !p.audio.isEmpty();
@@ -74,6 +79,7 @@ final class MediaSheet {
             s.remember();
             JSONObject spec = Media.spec(p.engine, p.page, s.audio, q.height, q.fmt,
                     s.thumb.isChecked(), !s.audio && s.subs.isEnabled() && s.subs.isChecked(), null, null);
+            s.extra(spec, p.thumb, badge(q, s.audio));
             List<JSONObject> specs = new ArrayList<>();
             List<String> names = new ArrayList<>();
             specs.add(spec);
@@ -87,6 +93,7 @@ final class MediaSheet {
     static void show(Activity a, Media.Playlist pl, Go go) {
         MediaSheet s = new MediaSheet(a);
         int n = pl.tracks.size();
+        s.preview(pl.tracks.isEmpty() ? null : pl.tracks.get(0).thumb, n + (pl.music ? " songs" : " videos"));
         String count = n + (n == 1 ? " song" : pl.music ? " songs" : " videos");
         s.header(pl.name, count + " · " + pl.from + (pl.spotify ? " · matched on YouTube Music" : ""));
         List<Media.Quality> video = new ArrayList<>();
@@ -117,6 +124,7 @@ final class MediaSheet {
                         // Strings never fail.
                     }
                 }
+                s.extra(spec, t.thumb, badge(q, s.audio));
                 specs.add(spec);
                 names.add(t.artist != null && !t.artist.isEmpty() && pl.music ? t.artist.split(",")[0].trim() + " - " + t.title : t.title);
             }
@@ -126,6 +134,62 @@ final class MediaSheet {
     }
 
     // ---- building blocks ----------------------------------------------------------------
+
+    /** A 16:9 preview with the length (or song count) in the corner. */
+    private void preview(String url, String corner) {
+        if (url == null || url.isEmpty()) return;
+        FrameLayout frame = new FrameLayout(a);
+        ShapeableImageView img = new ShapeableImageView(a);
+        img.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        img.setShapeAppearanceModel(ShapeAppearanceModel.builder().setAllCornerSizes(dp(22)).build());
+        img.setBackgroundColor(color(com.google.android.material.R.attr.colorSurfaceContainerHigh));
+        int width = a.getResources().getDisplayMetrics().widthPixels - dp(40);
+        frame.addView(img, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Math.min(width * 9 / 16, dp(260))));
+        if (corner != null && !corner.isEmpty()) {
+            TextView t = new TextView(a);
+            t.setText(corner);
+            t.setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_LabelMedium);
+            t.setTextColor(0xFFFFFFFF);
+            t.setBackgroundResource(R.drawable.pill);
+            t.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xB3000000));
+            t.setPadding(dp(10), dp(4), dp(10), dp(4));
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT, android.view.Gravity.BOTTOM | android.view.Gravity.END);
+            lp.setMargins(0, 0, dp(10), dp(10));
+            frame.addView(t, lp);
+        }
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.topMargin = dp(12);
+        box.addView(frame, lp);
+        Thumbs.load(img, url, 720, null);
+    }
+
+    /** Thumbnail and quality badge for the download card. */
+    private void extra(JSONObject spec, String thumbUrl, String badge) {
+        try {
+            if (thumbUrl != null) spec.put("thumbUrl", thumbUrl);
+            if (badge != null) spec.put("badge", badge);
+        } catch (Exception ignored) {
+            // Strings never fail.
+        }
+    }
+
+    /** "2160p60 · VP9", "1080p", "Opus · 160 kbps", "Audio". */
+    private static String badge(Media.Quality q, boolean audio) {
+        String d = q.detail == null ? "" : q.detail.replace(" · as uploaded", "");
+        if (audio) {
+            if (d.startsWith("Opus") || d.startsWith("AAC")) {
+                String[] parts = d.split(" · ");
+                return parts.length >= 2 ? parts[0] + " · " + parts[1] : parts[0];
+            }
+            return "m4a".equals(q.fmt) ? "M4A" : "opus".equals(q.fmt) ? "Opus" : "Audio";
+        }
+        if (d.matches("\\d+p.*")) {
+            String[] parts = d.split(" · ");
+            return parts.length >= 2 ? parts[0] + " · " + parts[1] : parts[0];
+        }
+        return q.height > 0 ? q.height + "p" : "Best quality";
+    }
 
     private void header(String title, String meta) {
         TextView t = new TextView(a);
@@ -234,6 +298,9 @@ final class MediaSheet {
 
     private void button(String text, Runnable go) {
         MaterialButton b = new MaterialButton(a);
+        b.setCornerRadius(dp(28));
+        b.setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_TitleMedium);
+        b.setTextColor(color(com.google.android.material.R.attr.colorOnPrimary));
         b.setText(text);
         b.setIconResource(R.drawable.ic_download);
         b.setIconGravity(MaterialButton.ICON_GRAVITY_TEXT_START);

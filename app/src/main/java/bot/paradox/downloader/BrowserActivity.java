@@ -47,6 +47,7 @@ public final class BrowserActivity extends AppCompatActivity {
     protected void onCreate(Bundle state) {
         EdgeToEdge.enable(this);
         super.onCreate(state);
+        Prefs.applyAmoled(this);
         setContentView(R.layout.activity_browser);
         bar = findViewById(R.id.toolbar);
         progress = findViewById(R.id.progress);

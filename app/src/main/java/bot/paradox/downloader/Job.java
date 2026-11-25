@@ -30,6 +30,8 @@ final class Job {
     long created;
     String media;      // video/music spec (see Media); null for plain files
     String stage;      // what a media job is doing right now ("Joining video and audio…")
+    String thumb;      // video thumbnail / cover art URL, for the card
+    String badge;      // quality shown on the card ("2160p60 · VP9", "Opus · 160 kbps")
 
     boolean active() {
         return QUEUED.equals(state) || CONNECTING.equals(state) || DOWNLOADING.equals(state);
@@ -55,6 +57,8 @@ final class Job {
         j.created = created;
         j.media = media;
         j.stage = stage;
+        j.thumb = thumb;
+        j.badge = badge;
         return j;
     }
 
@@ -76,6 +80,8 @@ final class Job {
         o.put("mime", mime);
         o.put("created", created);
         o.put("media", media);
+        o.put("thumb", thumb);
+        o.put("badge", badge);
         return o;
     }
 
@@ -97,6 +103,8 @@ final class Job {
         j.mime = str(o, "mime");
         j.created = o.optLong("created");
         j.media = str(o, "media");
+        j.thumb = str(o, "thumb");
+        j.badge = str(o, "badge");
         return j;
     }
 

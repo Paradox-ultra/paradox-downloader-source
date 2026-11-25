@@ -88,6 +88,7 @@ final class Media {
         String uploader;
         long duration;
         boolean musicFirst;           // open in Audio mode (music sites)
+        String thumb;                 // preview image for the sheet and the card
         final List<Quality> video = new ArrayList<>();
         final List<Quality> audio = new ArrayList<>();
         String subsLabel;             // null when there are no captions
@@ -98,6 +99,7 @@ final class Media {
         String query;  // search text when page is null
         String title;
         String artist;
+        String thumb;
     }
 
     static final class Playlist {
@@ -161,6 +163,7 @@ final class Media {
         p.uploader = info.getUploaderName();
         p.duration = info.getDuration();
         p.musicFirst = musicHost(url);
+        p.thumb = bestImage(info.getThumbnails());
 
         List<VideoStream> videos = videoStreams(info);
         TreeSet<Integer> heights = new TreeSet<>(Collections.reverseOrder());
@@ -336,6 +339,7 @@ final class Media {
             t.page = p.music ? i.getUrl().replace("://www.youtube.com", "://music.youtube.com") : i.getUrl();
             t.title = i.getName();
             t.artist = cleanArtist(i.getUploaderName());
+            t.thumb = bestImage(i.getThumbnails());
             p.tracks.add(t);
         }
     }
@@ -375,12 +379,15 @@ final class Media {
         p.music = true;
         p.from = "Spotify";
         p.name = nonEmpty(entity.optString("name", entity.optString("title")), "Spotify");
+        String cover = spotifyCover(entity);
         JSONArray list = entity.optJSONArray("trackList");
         if (list != null && list.length() > 0) {
             for (int i = 0; i < list.length(); i++) {
                 JSONObject t = list.getJSONObject(i);
                 String artists = t.optString("subtitle", "").replace(' ', ' ');
-                p.tracks.add(searchTrack(t.optString("title"), artists));
+                Track track = searchTrack(t.optString("title"), artists);
+                if ("album".equals(type)) track.thumb = cover; // an album's songs share its art
+                p.tracks.add(track);
             }
         } else if ("track".equals(type)) {
             StringBuilder artists = new StringBuilder();
@@ -389,10 +396,30 @@ final class Media {
                 if (artists.length() > 0) artists.append(", ");
                 artists.append(a.getJSONObject(i).optString("name"));
             }
-            p.tracks.add(searchTrack(entity.optString("title", entity.optString("name")), artists.toString()));
+            Track track = searchTrack(entity.optString("title", entity.optString("name")), artists.toString());
+            track.thumb = cover;
+            p.tracks.add(track);
         }
         if (p.tracks.isEmpty()) throw new IOException("No songs found in this Spotify link");
         return p;
+    }
+
+    /** The largest cover image Spotify's embed data offers, or null. */
+    private static String spotifyCover(JSONObject entity) {
+        JSONObject art = entity.optJSONObject("coverArt");
+        JSONArray sources = art == null ? null : art.optJSONArray("sources");
+        String best = null;
+        int bestW = -1;
+        for (int i = 0; sources != null && i < sources.length(); i++) {
+            JSONObject s = sources.optJSONObject(i);
+            if (s == null) continue;
+            int w = s.optInt("width", 0);
+            if (w > bestW) {
+                bestW = w;
+                best = s.optString("url", null);
+            }
+        }
+        return best;
     }
 
     private static Track searchTrack(String title, String artists) {
@@ -461,6 +488,7 @@ final class Media {
         p.title = nonEmpty(info.getTitle(), "video");
         p.uploader = info.getUploader();
         p.duration = info.getDuration();
+        p.thumb = info.getThumbnail();
         p.musicFirst = musicHost(url);
 
         int bestH = 0, bestFps = 0;

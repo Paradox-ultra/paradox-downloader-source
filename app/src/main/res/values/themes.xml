@@ -6,31 +6,226 @@
         <item name="colorPrimaryContainer">@color/pd_primary_container</item>
         <item name="colorOnPrimaryContainer">@color/pd_on_primary_container</item>
         <item name="colorSecondary">@color/pd_secondary</item>
+        <item name="colorOnSecondary">@color/pd_on_secondary</item>
         <item name="colorSecondaryContainer">@color/pd_secondary_container</item>
         <item name="colorOnSecondaryContainer">@color/pd_on_secondary_container</item>
         <item name="colorTertiary">@color/pd_tertiary</item>
         <item name="colorTertiaryContainer">@color/pd_tertiary_container</item>
         <item name="colorOnTertiaryContainer">@color/pd_on_tertiary_container</item>
+        <item name="colorError">@color/pd_error</item>
+        <item name="colorErrorContainer">@color/pd_error_container</item>
+        <item name="colorOnErrorContainer">@color/pd_on_error_container</item>
         <item name="android:colorBackground">@color/pd_surface</item>
         <item name="colorSurface">@color/pd_surface</item>
+        <item name="colorSurfaceContainerLowest">@color/pd_surface_container_lowest</item>
+        <item name="colorSurfaceContainerLow">@color/pd_surface_container_low</item>
         <item name="colorSurfaceContainer">@color/pd_surface_container</item>
         <item name="colorSurfaceContainerHigh">@color/pd_surface_container_high</item>
         <item name="colorSurfaceContainerHighest">@color/pd_surface_container_highest</item>
         <item name="colorOnSurface">@color/pd_on_surface</item>
         <item name="colorOnSurfaceVariant">@color/pd_on_surface_variant</item>
         <item name="colorOutline">@color/pd_outline</item>
+        <item name="colorOutlineVariant">@color/pd_outline_variant</item>
+        <item name="colorSurfaceInverse">@color/pd_inverse_surface</item>
+        <item name="colorOnSurfaceInverse">@color/pd_inverse_on_surface</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
+
+        <!-- Inter everywhere -->
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="fontFamily">@font/inter</item>
+        <item name="textAppearanceDisplaySmall">@style/TextAppearance.Ultra.DisplaySmall</item>
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.Ultra.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.Ultra.HeadlineMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Ultra.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Ultra.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Ultra.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.Ultra.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Ultra.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Ultra.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.Ultra.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Ultra.LabelLarge</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.Ultra.LabelMedium</item>
+        <item name="textAppearanceLabelSmall">@style/TextAppearance.Ultra.LabelSmall</item>
+
+        <!-- Soft, generous corners -->
+        <item name="shapeAppearanceCornerExtraSmall">@style/Shape.Ultra.XS</item>
+        <item name="shapeAppearanceCornerSmall">@style/Shape.Ultra.S</item>
+        <item name="shapeAppearanceCornerMedium">@style/Shape.Ultra.M</item>
+        <item name="shapeAppearanceCornerLarge">@style/Shape.Ultra.L</item>
+        <item name="shapeAppearanceCornerExtraLarge">@style/Shape.Ultra.XL</item>
+
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Ultra.Dialog</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.Ultra.BottomSheet</item>
+        <item name="snackbarStyle">@style/Widget.Ultra.Snackbar</item>
     </style>
 
+    <!-- AMOLED black: pure-black surfaces, faint grey layers for cards and sheets. -->
+    <style name="ThemeOverlay.Ultra.Amoled" parent="">
+        <item name="android:colorBackground">#FF000000</item>
+        <item name="colorSurface">#FF000000</item>
+        <item name="colorSurfaceContainerLowest">#FF000000</item>
+        <item name="colorSurfaceContainerLow">#FF080808</item>
+        <item name="colorSurfaceContainer">#FF0E0E0E</item>
+        <item name="colorSurfaceContainerHigh">#FF161616</item>
+        <item name="colorSurfaceContainerHighest">#FF1E1E1E</item>
+        <item name="colorOutlineVariant">#FF1C1C1C</item>
+        <item name="colorPrimaryContainer">#FF1E1E1E</item>
+        <item name="colorSecondaryContainer">#FF181818</item>
+        <item name="android:windowBackground">#FF000000</item>
+    </style>
+
+    <!-- Type -->
+    <style name="TextAppearance.Ultra.DisplaySmall" parent="TextAppearance.Material3.DisplaySmall">
+        <item name="android:fontFamily">@font/inter_semibold</item>
+        <item name="fontFamily">@font/inter_semibold</item>
+        <item name="android:letterSpacing">-0.03</item>
+    </style>
+    <style name="TextAppearance.Ultra.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="android:fontFamily">@font/inter_semibold</item>
+        <item name="fontFamily">@font/inter_semibold</item>
+        <item name="android:letterSpacing">-0.025</item>
+    </style>
+    <style name="TextAppearance.Ultra.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:fontFamily">@font/inter_semibold</item>
+        <item name="fontFamily">@font/inter_semibold</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+    <style name="TextAppearance.Ultra.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:fontFamily">@font/inter_semibold</item>
+        <item name="fontFamily">@font/inter_semibold</item>
+        <item name="android:letterSpacing">-0.015</item>
+    </style>
+    <style name="TextAppearance.Ultra.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:fontFamily">@font/inter_semibold</item>
+        <item name="fontFamily">@font/inter_semibold</item>
+        <item name="android:letterSpacing">-0.01</item>
+    </style>
+    <style name="TextAppearance.Ultra.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:fontFamily">@font/inter_semibold</item>
+        <item name="fontFamily">@font/inter_semibold</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+    <style name="TextAppearance.Ultra.TitleSmall" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:fontFamily">@font/inter_medium</item>
+        <item name="fontFamily">@font/inter_medium</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+    <style name="TextAppearance.Ultra.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="fontFamily">@font/inter</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+    <style name="TextAppearance.Ultra.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="fontFamily">@font/inter</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+    <style name="TextAppearance.Ultra.BodySmall" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="fontFamily">@font/inter</item>
+        <item name="android:letterSpacing">0.005</item>
+    </style>
+    <style name="TextAppearance.Ultra.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:fontFamily">@font/inter_medium</item>
+        <item name="fontFamily">@font/inter_medium</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+    <style name="TextAppearance.Ultra.LabelMedium" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:fontFamily">@font/inter_medium</item>
+        <item name="fontFamily">@font/inter_medium</item>
+    </style>
+    <style name="TextAppearance.Ultra.LabelSmall" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:fontFamily">@font/inter_medium</item>
+        <item name="fontFamily">@font/inter_medium</item>
+        <item name="android:letterSpacing">0.04</item>
+    </style>
+
+    <!-- Shapes -->
+    <style name="Shape.Ultra.XS" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">8dp</item>
+    </style>
+    <style name="Shape.Ultra.S" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+    <style name="Shape.Ultra.M" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">18dp</item>
+    </style>
+    <style name="Shape.Ultra.L" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">24dp</item>
+    </style>
+    <style name="Shape.Ultra.XL" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">32dp</item>
+    </style>
+
+    <!-- Dialogs and sheets -->
+    <style name="ThemeOverlay.Ultra.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="shapeAppearanceOverlay">@style/Shape.Ultra.XL</item>
+        <item name="colorSurfaceContainerHigh">?attr/colorSurfaceContainer</item>
+    </style>
+    <style name="ThemeOverlay.Ultra.BottomSheet" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.Ultra.BottomSheet</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+    <style name="Widget.Ultra.BottomSheet" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">?attr/colorSurfaceContainer</item>
+        <item name="shapeAppearance">@style/Shape.Ultra.SheetTop</item>
+    </style>
+    <style name="Shape.Ultra.Pill" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+    <style name="Shape.Ultra.SheetTop" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">32dp</item>
+        <item name="cornerSizeTopRight">32dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+    <style name="Widget.Ultra.Snackbar" parent="Widget.Material3.Snackbar">
+        <item name="shapeAppearance">@style/Shape.Ultra.M</item>
+    </style>
+
+    <!-- Filter pills: black when selected, soft grey otherwise -->
+    <style name="Widget.Ultra.FilterChip" parent="Widget.Material3.Chip.Filter">
+        <item name="chipBackgroundColor">@color/chip_bg</item>
+        <item name="android:textColor">@color/chip_text</item>
+        <item name="chipStrokeWidth">0dp</item>
+        <item name="checkedIconVisible">false</item>
+        <item name="chipCornerRadius">100dp</item>
+        <item name="chipMinHeight">36dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.Ultra.LabelLarge</item>
+        <item name="chipStartPadding">6dp</item>
+        <item name="chipEndPadding">6dp</item>
+    </style>
+
+    <!-- "Works with" tags under the link box -->
+    <style name="Ultra.Tag" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginEnd">6dp</item>
+        <item name="android:background">@drawable/pill</item>
+        <item name="android:backgroundTint">?attr/colorSurfaceContainerHigh</item>
+        <item name="android:paddingHorizontal">10dp</item>
+        <item name="android:paddingVertical">5dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.Ultra.LabelMedium</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <!-- File-type tile on download cards -->
     <style name="Paradox.ExtTile" parent="">
-        <item name="android:layout_width">48dp</item>
-        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_width">56dp</item>
+        <item name="android:layout_height">56dp</item>
         <item name="android:gravity">center</item>
         <item name="android:background">@drawable/ext_tile</item>
         <item name="android:textSize">11sp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:letterSpacing">0.04</item>
+        <item name="android:fontFamily">@font/inter_semibold</item>
+        <item name="android:letterSpacing">0.06</item>
         <item name="android:maxLines">1</item>
         <item name="android:includeFontPadding">false</item>
     </style>

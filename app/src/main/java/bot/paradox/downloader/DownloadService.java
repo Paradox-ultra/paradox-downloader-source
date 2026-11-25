@@ -110,6 +110,8 @@ public final class DownloadService extends Service {
         j.source = source;
         j.name = name;
         j.media = spec.toString();
+        j.thumb = spec.optString("thumbUrl", null);
+        j.badge = spec.optString("badge", null);
         j.created = System.currentTimeMillis();
         JobStore.get(c).add(j);
         send(c, A_ADD, j.id);

@@ -1,20 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="pd_primary">#B3C5FF</color>
-    <color name="pd_on_primary">#002B75</color>
-    <color name="pd_primary_container">#003FA4</color>
-    <color name="pd_on_primary_container">#DBE1FF</color>
-    <color name="pd_secondary">#C0C6DC</color>
-    <color name="pd_secondary_container">#404659</color>
-    <color name="pd_on_secondary_container">#DCE2F9</color>
-    <color name="pd_tertiary">#E1BBDC</color>
-    <color name="pd_tertiary_container">#5A3D58</color>
-    <color name="pd_on_tertiary_container">#FFD7F6</color>
-    <color name="pd_surface">#121318</color>
-    <color name="pd_surface_container">#1E1F25</color>
-    <color name="pd_surface_container_high">#292A2F</color>
-    <color name="pd_surface_container_highest">#34343A</color>
-    <color name="pd_on_surface">#E3E2E9</color>
-    <color name="pd_on_surface_variant">#C5C6D0</color>
-    <color name="pd_outline">#8F909A</color>
+    <!-- Dark = soft charcoal, chalk-white accents. -->
+    <color name="pd_primary">#F2F2EF</color>
+    <color name="pd_on_primary">#121212</color>
+    <color name="pd_primary_container">#2B2B2A</color>
+    <color name="pd_on_primary_container">#F2F2EF</color>
+    <color name="pd_secondary">#B4B4AF</color>
+    <color name="pd_on_secondary">#121212</color>
+    <color name="pd_secondary_container">#262625</color>
+    <color name="pd_on_secondary_container">#EDEDEA</color>
+    <color name="pd_tertiary">#D2D2CD</color>
+    <color name="pd_tertiary_container">#323231</color>
+    <color name="pd_on_tertiary_container">#F0F0ED</color>
+    <color name="pd_error">#F2B8B5</color>
+    <color name="pd_error_container">#5C1A16</color>
+    <color name="pd_on_error_container">#F9DEDC</color>
+
+    <color name="pd_surface">#0F0F0F</color>
+    <color name="pd_surface_container_lowest">#0A0A0A</color>
+    <color name="pd_surface_container_low">#141414</color>
+    <color name="pd_surface_container">#1A1A1A</color>
+    <color name="pd_surface_container_high">#222222</color>
+    <color name="pd_surface_container_highest">#2B2B2B</color>
+    <color name="pd_on_surface">#F2F2EF</color>
+    <color name="pd_on_surface_variant">#9C9C97</color>
+    <color name="pd_outline">#4A4A48</color>
+    <color name="pd_outline_variant">#262626</color>
+    <color name="pd_inverse_surface">#F2F2EF</color>
+    <color name="pd_inverse_on_surface">#1A1A1A</color>
 </resources>

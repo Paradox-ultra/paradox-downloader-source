@@ -2,14 +2,13 @@ package bot.paradox.downloader;
 
 import android.app.Application;
 
-import com.google.android.material.color.DynamicColors;
-
 public final class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        // Material You colours from the wallpaper on Android 12+.
-        DynamicColors.applyToActivitiesIfAvailable(this);
+        // The black-and-white brand theme is used on every Android version
+        // (no wallpaper colours), so the app looks the same everywhere.
+        Prefs.applyNightMode(this);
         DownloadService.createChannels(this);
     }
 }

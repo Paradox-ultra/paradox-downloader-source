@@ -16,9 +16,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-/** Moves a finished download into Download/Paradox Downloader. */
+/** Moves a finished download into Download/Downloader Ultra. */
 final class Saver {
-    static final String FOLDER = "Paradox Downloader";
+    static final String FOLDER = "Downloader Ultra";
 
     private Saver() {}
 

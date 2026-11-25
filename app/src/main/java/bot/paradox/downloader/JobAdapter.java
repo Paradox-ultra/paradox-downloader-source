@@ -4,6 +4,7 @@ import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -71,7 +72,9 @@ final class JobAdapter extends ListAdapter<Job, JobAdapter.VH> {
     }
 
     final class VH extends RecyclerView.ViewHolder {
-        final TextView ext, name, status;
+        final TextView ext, name, status, badge, pct;
+        final ImageView thumb;
+        final View progressRow;
         final LinearProgressIndicator bar;
         final MaterialButton primary, more;
         Job job;
@@ -82,6 +85,10 @@ final class JobAdapter extends ListAdapter<Job, JobAdapter.VH> {
             name = v.findViewById(R.id.name);
             status = v.findViewById(R.id.status);
             bar = v.findViewById(R.id.bar);
+            thumb = v.findViewById(R.id.thumb);
+            badge = v.findViewById(R.id.badge);
+            pct = v.findViewById(R.id.pct);
+            progressRow = v.findViewById(R.id.progress_row);
             primary = v.findViewById(R.id.primary);
             more = v.findViewById(R.id.more);
             v.setOnClickListener(x -> {
@@ -105,6 +112,16 @@ final class JobAdapter extends ListAdapter<Job, JobAdapter.VH> {
             String e = Fmt.ext(j.name);
             ext.setText(e.isEmpty() ? "FILE" : e.toUpperCase(Locale.ROOT));
             tint(j, e);
+            // Video thumbnail or cover art when there is one; the file-type tile otherwise.
+            if (j.thumb != null && !j.thumb.equals(thumb.getTag(R.id.thumb_url))) {
+                thumb.setVisibility(View.GONE);
+                Thumbs.load(thumb, j.thumb, 200, ok -> thumb.setVisibility(ok ? View.VISIBLE : View.GONE));
+            } else if (j.thumb == null) {
+                thumb.setTag(R.id.thumb_url, null);
+                thumb.setVisibility(View.GONE);
+            }
+            badge.setText(j.badge);
+            badge.setVisibility(j.badge == null || j.badge.isEmpty() || Job.FAILED.equals(j.state) ? View.GONE : View.VISIBLE);
 
             int icon;
             String what;
@@ -129,22 +146,27 @@ final class JobAdapter extends ListAdapter<Job, JobAdapter.VH> {
 
             boolean showBar = !Job.DONE.equals(j.state) && !failed;
             if (!showBar) {
-                bar.setVisibility(View.GONE);
+                progressRow.setVisibility(View.GONE);
                 return;
             }
+            progressRow.setVisibility(View.VISIBLE);
             boolean indeterminate = Job.QUEUED.equals(j.state) || Job.CONNECTING.equals(j.state)
                     || (Job.DOWNLOADING.equals(j.state) && j.total <= 0);
-            if (bar.getVisibility() != View.VISIBLE) {
+            if (bar.isIndeterminate() != indeterminate) {
+                // Switching modes on a visible bar needs it hidden for a moment.
+                bar.setVisibility(View.INVISIBLE);
                 bar.setIndeterminate(indeterminate);
                 bar.setVisibility(View.VISIBLE);
-            } else if (bar.isIndeterminate() != indeterminate) {
-                bar.setIndeterminate(indeterminate);
             }
             if (!indeterminate) {
-                int pct = j.total > 0 ? (int) Math.min(1000, j.done * 1000 / j.total) : 0;
-                bar.setProgressCompat(pct, true);
+                int permille = j.total > 0 ? (int) Math.min(1000, j.done * 1000 / j.total) : 0;
+                bar.setProgressCompat(permille, true);
+                pct.setText((permille / 10) + "%");
+            } else {
+                pct.setText("");
             }
-            bar.setAlpha(Job.PAUSED.equals(j.state) ? 0.45f : 1f);
+            bar.setAlpha(Job.PAUSED.equals(j.state) ? 0.4f : 1f);
+            pct.setAlpha(Job.PAUSED.equals(j.state) ? 0.5f : 1f);
         }
 
         private void tint(Job j, String e) {
@@ -230,7 +252,8 @@ final class JobAdapter extends ListAdapter<Job, JobAdapter.VH> {
 
         private boolean sameLook(Job a, Job b) {
             return Objects.equals(a.state, b.state) && Objects.equals(a.name, b.name)
-                    && Objects.equals(a.error, b.error) && Objects.equals(a.uri, b.uri);
+                    && Objects.equals(a.error, b.error) && Objects.equals(a.uri, b.uri)
+                    && Objects.equals(a.thumb, b.thumb) && Objects.equals(a.badge, b.badge);
         }
     };
 }

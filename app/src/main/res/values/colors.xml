@@ -1,21 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Fallback palette for Android 8-11 (Android 12+ uses wallpaper colours). -->
-    <color name="pd_primary">#2457C5</color>
+    <!-- Downloader Ultra: soft monochrome. Light = warm off-white paper, ink-black accents. -->
+    <color name="launcher_bg">#232323</color>
+
+    <color name="pd_primary">#141414</color>
     <color name="pd_on_primary">#FFFFFF</color>
-    <color name="pd_primary_container">#DBE1FF</color>
-    <color name="pd_on_primary_container">#00174B</color>
-    <color name="pd_secondary">#585E71</color>
-    <color name="pd_secondary_container">#DCE2F9</color>
-    <color name="pd_on_secondary_container">#151B2C</color>
-    <color name="pd_tertiary">#735471</color>
-    <color name="pd_tertiary_container">#FFD7F6</color>
-    <color name="pd_on_tertiary_container">#2B122B</color>
-    <color name="pd_surface">#FAF9FE</color>
-    <color name="pd_surface_container">#EEEDF4</color>
-    <color name="pd_surface_container_high">#E8E7EF</color>
-    <color name="pd_surface_container_highest">#E3E2E9</color>
-    <color name="pd_on_surface">#1A1B21</color>
-    <color name="pd_on_surface_variant">#45464F</color>
-    <color name="pd_outline">#757680</color>
+    <color name="pd_primary_container">#E9E9E6</color>
+    <color name="pd_on_primary_container">#141414</color>
+    <color name="pd_secondary">#5E5E5B</color>
+    <color name="pd_on_secondary">#FFFFFF</color>
+    <color name="pd_secondary_container">#EFEFEC</color>
+    <color name="pd_on_secondary_container">#1C1C1B</color>
+    <color name="pd_tertiary">#3B3B39</color>
+    <color name="pd_tertiary_container">#E3E3DF</color>
+    <color name="pd_on_tertiary_container">#191918</color>
+    <color name="pd_error">#B3261E</color>
+    <color name="pd_error_container">#F9DEDC</color>
+    <color name="pd_on_error_container">#410E0B</color>
+
+    <color name="pd_surface">#F6F6F3</color>
+    <color name="pd_surface_container_lowest">#FFFFFF</color>
+    <color name="pd_surface_container_low">#FBFBF9</color>
+    <color name="pd_surface_container">#FFFFFF</color>
+    <color name="pd_surface_container_high">#EFEFEC</color>
+    <color name="pd_surface_container_highest">#E8E8E4</color>
+    <color name="pd_on_surface">#141414</color>
+    <color name="pd_on_surface_variant">#6E6E6A</color>
+    <color name="pd_outline">#B9B9B4</color>
+    <color name="pd_outline_variant">#E4E4E0</color>
+    <color name="pd_inverse_surface">#1C1C1B</color>
+    <color name="pd_inverse_on_surface">#F3F3F0</color>
 </resources>
