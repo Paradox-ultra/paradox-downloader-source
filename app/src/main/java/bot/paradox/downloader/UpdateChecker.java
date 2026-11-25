@@ -27,7 +27,7 @@ final class UpdateChecker {
     }
 
     static final String OWNER = "Paradox-ultra";
-    static final String REPO = "paradox-downloader";
+    static final String REPO = "downloader-ultra";
     private static final long OK_INTERVAL = 12 * 60 * 60 * 1000L;
     private static final long RETRY_INTERVAL = 2 * 60 * 60 * 1000L;
     private static final Pattern CODE = Pattern.compile("(?i)versionCode\\s*[:=]\\s*(\\d{1,9})");
@@ -69,7 +69,7 @@ final class UpdateChecker {
                 HttpURLConnection c = Http.open("https://api.github.com/repos/" + OWNER + "/" + REPO + "/releases?per_page=10",
                         "GET", null, null, null);
                 c.setRequestProperty("Accept", "application/vnd.github+json");
-                c.setRequestProperty("User-Agent", "Paradox-Downloader/" + BuildConfig.VERSION_NAME);
+                c.setRequestProperty("User-Agent", "Downloader-Ultra/" + BuildConfig.VERSION_NAME);
                 f = pick(Http.text(c, 500_000));
                 ok = true;
                 sp.edit().putLong("updateNext", System.currentTimeMillis() + OK_INTERVAL).apply();
