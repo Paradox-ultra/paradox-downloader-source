@@ -74,6 +74,9 @@ tap exact Home
 tap id input && adb shell input text "https://proof.ovh.net/files/10Mb.dat"
 shot link-typed
 tap exact Download; sleep 15; shot after-download; check "start download"
+# After the first download the app asks once about running in the background. The dialog covers
+# the whole screen, so every later tap would miss.
+visible exact "Not now" && tap exact "Not now"
 tap exact Downloads; shot list-after-download; check "list after download"
 visible contains "10Mb" && echo "download is listed" || echo "-- download NOT listed"
 
@@ -84,7 +87,10 @@ sleep 12; shot shared-link; check "share a link in"
 step "a web page opens in the browser"
 tap exact Home
 tap id input && adb shell input text "https://example.com"
-tap exact Download; sleep 8; shot page-result; check "resolve a page"
+tap exact Download
+# The first yt-dlp lookup can take a minute before the app offers the browser.
+for _ in $(seq 1 30); do visible exact "Open browser" && break; sleep 3; done
+shot page-result; check "resolve a page"
 tap exact "Open browser"; sleep 12; shot browser; check "open browser"
 tap contains "ad blocker"; shot browser-shield; check "toggle blocker"
 adb shell input keyevent 4; sleep 2; check "leave browser"
