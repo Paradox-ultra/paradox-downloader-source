@@ -1,0 +1,116 @@
+name: Build TDLib
+# Builds libtdjsonjava.so from the official TDLib source for the app's two ABIs and publishes
+# it, with JsonClient.java, as a pre-release of this repo. app/build.gradle downloads that zip
+# and checks its SHA-256. A published tag is never rebuilt: to move to a newer TDLib change
+# TD_COMMIT and TAG here, then the pin in app/build.gradle.
+on:
+  workflow_dispatch:
+  push:
+    branches: [telegram-login]
+    paths: ['.github/workflows/tdlib.yml']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tdlib
+
+env:
+  TD_COMMIT: 1b9efe84d6e9a2e2f6eadeeea32b0726d2b8c25d
+  TAG: tdlib-1b9efe8
+  OPENSSL_TAG: openssl-3.5.9
+  NDK: 28.2.13676358
+  API_LEVEL: '26'
+  ABIS: arm64-v8a armeabi-v7a
+
+jobs:
+  tdlib:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - name: Check whether it is already published
+        id: have
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::$TAG already exists; nothing to build"
+          fi
+
+      - uses: actions/setup-java@v4
+        if: steps.have.outputs.published != 'true'
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install tools
+        if: steps.have.outputs.published != 'true'
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q gperf php-cli zlib1g-dev libssl-dev
+          sdk="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$sdk" --licenses >/dev/null || true
+          "$sdk" "ndk;$NDK" "cmake;3.22.1" "platforms;android-34" >/dev/null
+
+      - name: Fetch TDLib at the pinned commit
+        if: steps.have.outputs.published != 'true'
+        run: |
+          git init -q td
+          cd td
+          git fetch -q --depth 1 https://github.com/tdlib/td "$TD_COMMIT"
+          git checkout -q FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "$TD_COMMIT"
+
+      - name: Build OpenSSL
+        if: steps.have.outputs.published != 'true'
+        working-directory: td/example/android
+        run: |
+          # The script builds four ABIs; the app ships two.
+          sed -i "s/^for ABI in arm64-v8a armeabi-v7a x86_64 x86 ; do/for ABI in $ABIS ; do/" build-openssl.sh
+          grep -q "^for ABI in $ABIS ; do" build-openssl.sh
+          ./build-openssl.sh "$ANDROID_HOME" "$NDK" third-party/openssl "$OPENSSL_TAG"
+
+      - name: Build TDLib
+        if: steps.have.outputs.published != 'true'
+        working-directory: td/example/android
+        run: ./build-tdlib.sh "$ANDROID_HOME" "$NDK" third-party/openssl c++_static JSONJava "$API_LEVEL" "$ABIS"
+
+      - name: Verify and package
+        if: steps.have.outputs.published != 'true'
+        run: |
+          set -euo pipefail
+          out=td/example/android/tdlib
+          test -f "$out/java/org/drinkless/tdlib/JsonClient.java"
+          cp td/LICENSE_1_0.txt "$out/"
+          printf 'TDLib %s\nOpenSSL %s (Apache-2.0)\nAndroid NDK %s, API %s\n' \
+            "$TD_COMMIT" "$OPENSSL_TAG" "$NDK" "$API_LEVEL" > "$out/BUILD.txt"
+          {
+            echo "Built by \`tdlib.yml\` from the official source. Used by \`app/build.gradle\`; not an app release."
+            echo
+            cat "$out/BUILD.txt"
+            echo
+            echo "| ABI | library bytes | gzip -9 bytes |"
+            echo "|---|---|---|"
+          } > notes.md
+          for abi in $ABIS; do
+            so="$out/libs/$abi/libtdjsonjava.so"
+            test -f "$so"
+            echo "| $abi | $(stat -c%s "$so") | $(gzip -9c "$so" | wc -c) |" >> notes.md
+          done
+          # 64-bit libraries must load on devices with 16 KB memory pages.
+          readelf -lW "$out/libs/arm64-v8a/libtdjsonjava.so" | grep LOAD
+          test "$(readelf -lW "$out/libs/arm64-v8a/libtdjsonjava.so" | awk '/LOAD/{print $NF}' | sort -u)" = "0x4000"
+          mkdir -p dist
+          (cd "$out" && zip -q -r -X "$GITHUB_WORKSPACE/dist/$TAG.zip" java libs LICENSE_1_0.txt BUILD.txt)
+          (cd dist && sha256sum "$TAG.zip" | tee SHA256SUMS.txt)
+          { echo; echo '```'; cat dist/SHA256SUMS.txt; echo '```'; } >> notes.md
+          cat notes.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish
+        if: steps.have.outputs.published != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" dist/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --prerelease --title "TDLib ${TD_COMMIT:0:7} (build dependency)" --notes-file notes.md
