@@ -22,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
@@ -34,6 +35,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.badge.BadgeDrawable;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -62,7 +65,9 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
     private RecyclerView list;
     private View empty;
     private TextView emptyTitle, emptyBody, stats;
-    private View tips;
+    private View tips, paneHome, paneDownloads;
+    private BottomNavigationView nav;
+    private int tab; // 0 = Home, 1 = Downloads
     private ExtendedFloatingActionButton fab;
     private Chip chipAll, chipActive, chipDone;
     private int filter = FILTER_ALL;
@@ -94,6 +99,24 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
         setContentView(R.layout.activity_main);
         store = JobStore.get(this);
 
+        paneHome = findViewById(R.id.pane_home);
+        paneDownloads = findViewById(R.id.pane_downloads);
+        nav = findViewById(R.id.nav);
+        nav.setOnItemSelectedListener(item -> {
+            showTab(item.getItemId() == R.id.nav_downloads ? 1 : 0);
+            return true;
+        });
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (tab == 1) {
+                    showTab(0);
+                } else {
+                    setEnabled(false);
+                    getOnBackPressedDispatcher().onBackPressed();
+                }
+            }
+        });
         findViewById(R.id.settings).setOnClickListener(v -> SettingsSheet.show(this));
         stats = findViewById(R.id.stats);
         tips = findViewById(R.id.tips);
@@ -157,12 +180,28 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
             render();
         });
 
+        showTab(state == null ? 0 : state.getInt("tab", 0));
         receive(getIntent());
         if (state == null) {
             UpdateChecker.maybeCheck(this, shown -> {
                 if (!shown) ChannelCard.maybeShow(this);
             });
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle out) {
+        super.onSaveInstanceState(out);
+        out.putInt("tab", tab);
+    }
+
+    /** Home (paste a link) or Downloads (the list). */
+    private void showTab(int t) {
+        tab = t;
+        paneHome.setVisibility(t == 0 ? View.VISIBLE : View.GONE);
+        paneDownloads.setVisibility(t == 1 ? View.VISIBLE : View.GONE);
+        int want = t == 1 ? R.id.nav_downloads : R.id.nav_home;
+        if (nav.getSelectedItemId() != want) nav.setSelectedItemId(want);
     }
 
     @Override
@@ -227,7 +266,7 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
         } else if (done > 0) {
             stats.setText(done + (done == 1 ? " file saved" : " files saved") + " · all done");
         } else {
-            stats.setText("Ready when you are");
+            stats.setText("Nothing yet");
         }
 
         adapter.submitList(shown, () -> {
@@ -242,7 +281,9 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
 
         boolean nothing = shown.isEmpty();
         empty.setVisibility(nothing ? View.VISIBLE : View.GONE);
-        tips.setVisibility(all.isEmpty() ? View.VISIBLE : View.GONE);
+        BadgeDrawable badge = nav.getOrCreateBadge(R.id.nav_downloads);
+        badge.setVisible(active > 0);
+        if (active > 0) badge.setNumber(active);
         if (nothing) {
             if (filter == FILTER_ACTIVE && !all.isEmpty()) {
                 emptyTitle.setText("Nothing in progress");
@@ -252,7 +293,7 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
                 emptyBody.setText("Finished files are saved in Download/" + Saver.FOLDER + ".");
             } else {
                 emptyTitle.setText("No downloads yet");
-                emptyBody.setText("Paste a link above to get started.");
+                emptyBody.setText("Paste a link on the Home tab to get started.");
             }
         }
     }
@@ -263,15 +304,27 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
         if (i == null) return;
         if (ACTION_SHOW_JOB.equals(i.getAction())) {
             showJobId = i.getStringExtra("id");
+            showTab(1);
             if (filter != FILTER_ALL) ((ChipGroup) findViewById(R.id.filters)).check(R.id.chip_all);
             render();
             return;
+        }
+        // Files shared from another app (Telegram, a gallery, a file manager): save them as they are.
+        if (Intent.ACTION_SEND_MULTIPLE.equals(i.getAction()) || (Intent.ACTION_SEND.equals(i.getAction())
+                && i.hasExtra(Intent.EXTRA_STREAM))) {
+            java.util.List<android.net.Uri> files = ShareImport.files(i);
+            if (!files.isEmpty()) {
+                showTab(1);
+                ShareImport.run(this, files);
+                return;
+            }
         }
         String text = null;
         if (Intent.ACTION_SEND.equals(i.getAction())) text = i.getStringExtra(Intent.EXTRA_TEXT);
         else if (Intent.ACTION_VIEW.equals(i.getAction()) && i.getData() != null) text = i.getDataString();
         String url = firstLink(text);
         if (url != null) {
+            showTab(0);
             input.setText(url);
             input.setSelection(url.length());
             start();
@@ -413,6 +466,7 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
         }
         for (int i = 0; i < specs.size(); i++) DownloadService.addMedia(this, specs.get(i), source, names.get(i));
         input.setText("");
+        showTab(1); // show the new download where it lives
         if (filter == FILTER_DONE) ((ChipGroup) findViewById(R.id.filters)).check(R.id.chip_all);
         list.scrollToPosition(0);
         String what = specs.size() == 1 ? names.get(0) : specs.size() + " items";
@@ -476,6 +530,7 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
         }
         DownloadService.add(this, o, source);
         input.setText("");
+        showTab(1); // show the new download where it lives
         if (filter == FILTER_DONE) ((ChipGroup) findViewById(R.id.filters)).check(R.id.chip_all);
         list.scrollToPosition(0);
         String name = o.name != null ? o.name : o.label;

@@ -1,364 +1,512 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?android:attr/colorBackground"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appbar"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?android:attr/colorBackground"
-        android:fitsSystemWindows="true"
-        app:elevation="0dp"
-        app:liftOnScroll="false">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-        <!-- Scrolls away so the list gets the whole screen. -->
-        <LinearLayout
+        <!-- ============ HOME ============ -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/pane_home"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="20dp"
-            android:paddingTop="12dp"
-            app:layout_scrollFlags="scroll|enterAlways|snap">
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:fillViewport="true">
 
-            <!-- Brand row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="20dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="28dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <FrameLayout
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:background="@drawable/circle"
+                        android:backgroundTint="?attr/colorPrimary">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_arrow_down"
+                            app:tint="?attr/colorOnPrimary" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/brand"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/app_name"
+                            android:textAppearance="?attr/textAppearanceTitleLarge" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:text="Videos, music and files"
+                            android:textAppearance="?attr/textAppearanceBodySmall"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/settings"
+                        style="@style/Widget.Material3.Button.IconButton.Outlined"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:contentDescription="Settings"
+                        app:icon="@drawable/ic_settings"
+                        app:iconTint="?attr/colorOnSurface"
+                        app:strokeColor="?attr/colorOutlineVariant" />
+                </LinearLayout>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    app:cardBackgroundColor="?attr/colorPrimaryContainer"
+                    app:cardCornerRadius="28dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="What do you want to download?"
+                            android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                            android:textColor="?attr/colorOnPrimaryContainer" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Paste a link from almost any site."
+                            android:textAppearance="?attr/textAppearanceBodyMedium"
+                            android:textColor="?attr/colorOnPrimaryContainer" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/input_layout"
+                            style="@style/Widget.Material3.TextInputLayout.FilledBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:hint="Paste a link"
+                            app:boxBackgroundColor="?attr/colorSurfaceContainerLowest"
+                            app:boxCornerRadiusBottomEnd="18dp"
+                            app:boxCornerRadiusBottomStart="18dp"
+                            app:boxCornerRadiusTopEnd="18dp"
+                            app:boxCornerRadiusTopStart="18dp"
+                            app:boxStrokeWidth="0dp"
+                            app:boxStrokeWidthFocused="0dp"
+                            app:endIconContentDescription="Paste"
+                            app:endIconDrawable="@drawable/ic_paste"
+                            app:endIconMode="custom"
+                            app:endIconTint="?attr/colorOnSurface"
+                            app:hintTextColor="?attr/colorOnSurfaceVariant"
+                            app:startIconDrawable="@drawable/ic_link"
+                            app:startIconTint="?attr/colorOnSurfaceVariant">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/input"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:imeOptions="actionGo"
+                                android:inputType="textUri"
+                                android:maxLines="1" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/download"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:layout_marginTop="12dp"
+                            android:text="Download"
+                            android:textAppearance="?attr/textAppearanceTitleMedium"
+                            app:cornerRadius="28dp"
+                            app:icon="@drawable/ic_arrow_down"
+                            app:iconGravity="textStart"
+                            app:iconPadding="10dp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView style="@style/Ultra.Tag" android:text="YouTube" />
+                        <TextView style="@style/Ultra.Tag" android:text="YT Music" />
+                        <TextView style="@style/Ultra.Tag" android:text="Spotify" />
+                        <TextView style="@style/Ultra.Tag" android:text="Instagram" />
+                        <TextView style="@style/Ultra.Tag" android:text="TikTok" />
+                        <TextView style="@style/Ultra.Tag" android:text="X" />
+                        <TextView style="@style/Ultra.Tag" android:text="Drive" />
+                        <TextView style="@style/Ultra.Tag" android:text="1000+ sites" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp"
+                    android:text="What it does"
+                    android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+                <LinearLayout
+                    android:id="@+id/tips"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <FrameLayout
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    android:background="@drawable/circle"
-                    android:backgroundTint="?attr/colorPrimary">
-
-                    <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:layout_gravity="center"
-                        android:contentDescription="@null"
-                        android:src="@drawable/ic_arrow_down"
-                        app:tint="?attr/colorOnPrimary" />
-                </FrameLayout>
+                <ImageView
+                    style="@style/Ultra.FeatureTile"
+                    android:backgroundTint="?attr/colorPrimaryContainer"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_video"
+                    app:tint="?attr/colorOnPrimaryContainer" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
+                    android:layout_marginStart="14dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/brand"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/app_name"
-                        android:textAppearance="?attr/textAppearanceTitleLarge" />
+                        android:text="Video in the quality you choose"
+                        android:textAppearance="?attr/textAppearanceTitleSmall" />
 
                     <TextView
-                        android:id="@+id/stats"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="1dp"
-                        android:text="Ready when you are"
+                        android:text="From 144p up to 4K and 8K, with captions and thumbnail if you want them"
                         android:textAppearance="?attr/textAppearanceBodySmall"
                         android:textColor="?attr/colorOnSurfaceVariant" />
                 </LinearLayout>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/settings"
-                    style="@style/Widget.Material3.Button.IconButton.Outlined"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:contentDescription="Settings"
-                    app:icon="@drawable/ic_settings"
-                    app:iconTint="?attr/colorOnSurface"
-                    app:strokeColor="?attr/colorOutlineVariant" />
             </LinearLayout>
-
-            <!-- Link card -->
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                app:cardBackgroundColor="?attr/colorSurfaceContainer"
-                app:cardCornerRadius="28dp"
-                app:cardElevation="0dp"
-                app:strokeColor="?attr/colorOutlineVariant"
-                app:strokeWidth="1dp">
+                android:layout_marginTop="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    style="@style/Ultra.FeatureTile"
+                    android:backgroundTint="?attr/colorSecondaryContainer"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_audio"
+                    app:tint="?attr/colorOnSecondaryContainer" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Music and whole playlists"
+                        android:textAppearance="?attr/textAppearanceTitleSmall" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="1dp"
+                        android:text="YouTube Music and Spotify playlists in one tap"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    style="@style/Ultra.FeatureTile"
+                    android:backgroundTint="?attr/colorTertiaryContainer"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_shield"
+                    app:tint="?attr/colorOnTertiaryContainer" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Browser that blocks ads"
+                        android:textAppearance="?attr/textAppearanceTitleSmall" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="1dp"
+                        android:text="Pop-ups, trackers and cookie banners stay out of your way"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    style="@style/Ultra.FeatureTile"
+                    android:backgroundTint="?attr/colorSurfaceContainerHigh"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_share"
+                    app:tint="?attr/colorOnSurface" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Share from any app"
+                        android:textAppearance="?attr/textAppearanceTitleSmall" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="1dp"
+                        android:text="Send links or files, even several from Telegram, and they save right away"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+                </LinearLayout>
+            </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- ============ DOWNLOADS ============ -->
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:id="@+id/pane_downloads"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/appbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/colorBackground"
+                app:elevation="0dp"
+                app:liftOnScroll="false">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="18dp">
+                    android:paddingHorizontal="20dp"
+                    android:paddingTop="16dp"
+                    app:layout_scrollFlags="scroll|enterAlways|snap">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Download anything"
-                        android:textAppearance="?attr/textAppearanceHeadlineSmall" />
+                        android:text="Downloads"
+                        android:textAppearance="?attr/textAppearanceHeadlineMedium" />
 
                     <TextView
+                        android:id="@+id/stats"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Videos, music, playlists and files"
+                        android:text="Nothing yet"
                         android:textAppearance="?attr/textAppearanceBodyMedium"
                         android:textColor="?attr/colorOnSurfaceVariant" />
+                </LinearLayout>
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/input_layout"
-                        style="@style/Widget.Material3.TextInputLayout.FilledBox"
-                        android:layout_width="match_parent"
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clipToPadding="false"
+                    android:paddingHorizontal="20dp"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="8dp"
+                    android:scrollbars="none">
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/filters"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:hint="Paste a link"
-                        app:boxBackgroundColor="?attr/colorSurfaceContainerHigh"
-                        app:boxCornerRadiusBottomEnd="18dp"
-                        app:boxCornerRadiusBottomStart="18dp"
-                        app:boxCornerRadiusTopEnd="18dp"
-                        app:boxCornerRadiusTopStart="18dp"
-                        app:boxStrokeWidth="0dp"
-                        app:boxStrokeWidthFocused="0dp"
-                        app:endIconContentDescription="Paste"
-                        app:endIconDrawable="@drawable/ic_paste"
-                        app:endIconMode="custom"
-                        app:endIconTint="?attr/colorOnSurface"
-                        app:hintTextColor="?attr/colorOnSurfaceVariant"
-                        app:startIconDrawable="@drawable/ic_link"
-                        app:startIconTint="?attr/colorOnSurfaceVariant">
+                        app:checkedChip="@id/chip_all"
+                        app:chipSpacingHorizontal="8dp"
+                        app:selectionRequired="true"
+                        app:singleLine="true"
+                        app:singleSelection="true">
 
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/input"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:imeOptions="actionGo"
-                            android:inputType="textUri"
-                            android:maxLines="1" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/download"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:layout_marginTop="12dp"
-                        android:text="Download"
-                        android:textAppearance="?attr/textAppearanceTitleMedium"
-                        app:cornerRadius="28dp"
-                        app:icon="@drawable/ic_arrow_down"
-                        app:iconGravity="textStart"
-                        app:iconPadding="10dp" />
-
-                    <HorizontalScrollView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="14dp"
-                        android:scrollbars="none">
-
-                        <LinearLayout
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_all"
+                            style="@style/Widget.Ultra.FilterChip"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:text="All" />
 
-                            <TextView style="@style/Ultra.Tag" android:text="YouTube" />
-                            <TextView style="@style/Ultra.Tag" android:text="YT Music" />
-                            <TextView style="@style/Ultra.Tag" android:text="Spotify" />
-                            <TextView style="@style/Ultra.Tag" android:text="Instagram" />
-                            <TextView style="@style/Ultra.Tag" android:text="TikTok" />
-                            <TextView style="@style/Ultra.Tag" android:text="X" />
-                            <TextView style="@style/Ultra.Tag" android:text="Drive" />
-                            <TextView style="@style/Ultra.Tag" android:text="1000+ sites" />
-                        </LinearLayout>
-                    </HorizontalScrollView>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_active"
+                            style="@style/Widget.Ultra.FilterChip"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="In progress" />
 
-            <!-- Section header -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="26dp"
-                android:text="Your downloads"
-                android:textAppearance="?attr/textAppearanceTitleMedium" />
-        </LinearLayout>
-
-        <!-- Filters stay pinned while the list scrolls. -->
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:clipToPadding="false"
-            android:paddingHorizontal="20dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:scrollbars="none">
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/filters"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:checkedChip="@id/chip_all"
-                app:chipSpacingHorizontal="8dp"
-                app:selectionRequired="true"
-                app:singleLine="true"
-                app:singleSelection="true">
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_all"
-                    style="@style/Widget.Ultra.FilterChip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="All" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_active"
-                    style="@style/Widget.Ultra.FilterChip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="In progress" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_done"
-                    style="@style/Widget.Ultra.FilterChip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Finished" />
-            </com.google.android.material.chip.ChipGroup>
-        </HorizontalScrollView>
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:paddingHorizontal="16dp"
-            android:paddingTop="4dp" />
-
-        <LinearLayout
-            android:id="@+id/empty"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="28dp"
-            android:gravity="center_horizontal"
-            android:orientation="vertical"
-            android:paddingHorizontal="32dp"
-            android:visibility="gone">
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_done"
+                            style="@style/Widget.Ultra.FilterChip"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Finished" />
+                    </com.google.android.material.chip.ChipGroup>
+                </HorizontalScrollView>
+            </com.google.android.material.appbar.AppBarLayout>
 
             <FrameLayout
-                android:layout_width="88dp"
-                android:layout_height="88dp"
-                android:background="@drawable/circle"
-                android:backgroundTint="?attr/colorSurfaceContainerHigh">
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-                <FrameLayout
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:layout_gravity="center"
-                    android:background="@drawable/circle"
-                    android:backgroundTint="?attr/colorPrimary">
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingHorizontal="16dp"
+                    android:paddingTop="4dp" />
 
-                    <ImageView
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
-                        android:layout_gravity="center"
-                        android:contentDescription="@null"
-                        android:src="@drawable/ic_arrow_down"
-                        app:tint="?attr/colorOnPrimary" />
-                </FrameLayout>
+                <LinearLayout
+                    android:id="@+id/empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="56dp"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="32dp"
+                    android:visibility="gone">
+
+                    <FrameLayout
+                        android:layout_width="88dp"
+                        android:layout_height="88dp"
+                        android:background="@drawable/circle"
+                        android:backgroundTint="?attr/colorPrimaryContainer">
+
+                        <ImageView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_download"
+                            app:tint="?attr/colorOnPrimaryContainer" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/empty_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="18dp"
+                        android:gravity="center"
+                        android:text="No downloads yet"
+                        android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+                    <TextView
+                        android:id="@+id/empty_body"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:gravity="center"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+                </LinearLayout>
             </FrameLayout>
 
-            <TextView
-                android:id="@+id/empty_title"
+            <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+                android:id="@+id/fab"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                android:gravity="center"
-                android:text="No downloads yet"
-                android:textAppearance="?attr/textAppearanceTitleMedium" />
-
-            <TextView
-                android:id="@+id/empty_body"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:gravity="center"
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textColor="?attr/colorOnSurfaceVariant" />
-
-            <LinearLayout
-                android:id="@+id/tips"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="22dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/pill"
-                    android:backgroundTint="?attr/colorSurfaceContainer"
-                    android:drawableStart="@drawable/ic_share"
-                    android:drawablePadding="12dp"
-                    android:drawableTint="?attr/colorOnSurface"
-                    android:paddingHorizontal="18dp"
-                    android:paddingVertical="14dp"
-                    android:text="Share a link to Downloader Ultra from any app"
-                    android:textAppearance="?attr/textAppearanceBodyMedium" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/pill"
-                    android:backgroundTint="?attr/colorSurfaceContainer"
-                    android:drawableStart="@drawable/ic_video"
-                    android:drawablePadding="12dp"
-                    android:drawableTint="?attr/colorOnSurface"
-                    android:paddingHorizontal="18dp"
-                    android:paddingVertical="14dp"
-                    android:text="Pick the quality, up to 4K and 8K"
-                    android:textAppearance="?attr/textAppearanceBodyMedium" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/pill"
-                    android:backgroundTint="?attr/colorSurfaceContainer"
-                    android:drawableStart="@drawable/ic_audio"
-                    android:drawablePadding="12dp"
-                    android:drawableTint="?attr/colorOnSurface"
-                    android:paddingHorizontal="18dp"
-                    android:paddingVertical="14dp"
-                    android:text="Whole playlists in one tap, even Spotify"
-                    android:textAppearance="?attr/textAppearanceBodyMedium" />
-            </LinearLayout>
-        </LinearLayout>
+                android:layout_gravity="bottom|end"
+                android:layout_margin="20dp"
+                android:text="Paste link"
+                android:textAppearance="?attr/textAppearanceLabelLarge"
+                android:textColor="?attr/colorOnPrimary"
+                app:backgroundTint="?attr/colorPrimary"
+                app:icon="@drawable/ic_paste"
+                app:iconTint="?attr/colorOnPrimary"
+                app:shapeAppearanceOverlay="@style/Shape.Ultra.Pill" />
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
     </FrameLayout>
 
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?attr/colorOutlineVariant" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/nav"
+        style="@style/Widget.Ultra.BottomNav"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="20dp"
-        android:text="Paste link"
-        android:textAppearance="?attr/textAppearanceLabelLarge"
-        android:textColor="?attr/colorOnPrimary"
-        app:backgroundTint="?attr/colorPrimary"
-        app:icon="@drawable/ic_paste"
-        app:iconTint="?attr/colorOnPrimary"
-        app:shapeAppearanceOverlay="@style/Shape.Ultra.Pill" />
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        app:menu="@menu/main_nav" />
+</LinearLayout>

@@ -59,6 +59,8 @@ final class SettingsSheet {
                     fill(a, sheet, rows);
                 }));
 
+        row(a, rows, R.drawable.ic_shield, "Browser ad blocker", AdBlock.summary(a), v -> adBlock(a, sheet, rows));
+
         boolean notif = a.getSystemService(NotificationManager.class).areNotificationsEnabled();
         row(a, rows, R.drawable.ic_bell, "Notifications",
                 notif ? "On · progress shows in your notification shade" : "Off · turn on to see progress outside the app",
@@ -86,6 +88,26 @@ final class SettingsSheet {
             sheet.dismiss();
             UpdateChecker.checkNow(a);
         });
+    }
+
+    private static void adBlock(MainActivity a, BottomSheetDialog sheet, LinearLayout rows) {
+        String[] choices = {"On", "Off"};
+        new MaterialAlertDialogBuilder(a)
+                .setTitle("Browser ad blocker")
+                .setSingleChoiceItems(choices, AdBlock.enabled(a) ? 0 : 1, (d, w) -> {
+                    AdBlock.enabled(a, w == 0);
+                    d.dismiss();
+                    fill(a, sheet, rows);
+                })
+                .setNeutralButton("Update lists now", (d, w) -> {
+                    a.toast("Updating filter lists…");
+                    AdBlock.update(a, (ok, total) -> {
+                        a.toast(ok > 0 ? "Updated " + ok + " of " + total + " lists" : "Couldn't reach the list servers");
+                        fill(a, sheet, rows);
+                    });
+                })
+                .setNegativeButton("Close", null)
+                .show();
     }
 
     private interface OnNumber {

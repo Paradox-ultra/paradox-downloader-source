@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Downloader Ultra: soft monochrome. Light = warm off-white paper, ink-black accents. -->
+    <!-- Downloader Ultra: warm paper, ink text, one vermilion accent, teal and mustard as supporting colours. -->
     <color name="launcher_bg">#232323</color>
 
-    <color name="pd_primary">#141414</color>
+    <color name="pd_primary">#D8431F</color>
     <color name="pd_on_primary">#FFFFFF</color>
-    <color name="pd_primary_container">#E9E9E6</color>
-    <color name="pd_on_primary_container">#141414</color>
-    <color name="pd_secondary">#5E5E5B</color>
+    <color name="pd_primary_container">#FFE1D6</color>
+    <color name="pd_on_primary_container">#4A1304</color>
+    <color name="pd_secondary">#0E7C73</color>
     <color name="pd_on_secondary">#FFFFFF</color>
-    <color name="pd_secondary_container">#EFEFEC</color>
-    <color name="pd_on_secondary_container">#1C1C1B</color>
-    <color name="pd_tertiary">#3B3B39</color>
-    <color name="pd_tertiary_container">#E3E3DF</color>
-    <color name="pd_on_tertiary_container">#191918</color>
+    <color name="pd_secondary_container">#D2F0EB</color>
+    <color name="pd_on_secondary_container">#00302B</color>
+    <color name="pd_tertiary">#8A5A00</color>
+    <color name="pd_tertiary_container">#FBEBBE</color>
+    <color name="pd_on_tertiary_container">#3A2900</color>
     <color name="pd_error">#B3261E</color>
     <color name="pd_error_container">#F9DEDC</color>
     <color name="pd_on_error_container">#410E0B</color>
 
-    <color name="pd_surface">#F6F6F3</color>
+    <color name="pd_surface">#FBF7F0</color>
     <color name="pd_surface_container_lowest">#FFFFFF</color>
-    <color name="pd_surface_container_low">#FBFBF9</color>
+    <color name="pd_surface_container_low">#FFFCF7</color>
     <color name="pd_surface_container">#FFFFFF</color>
-    <color name="pd_surface_container_high">#EFEFEC</color>
-    <color name="pd_surface_container_highest">#E8E8E4</color>
-    <color name="pd_on_surface">#141414</color>
-    <color name="pd_on_surface_variant">#6E6E6A</color>
-    <color name="pd_outline">#B9B9B4</color>
-    <color name="pd_outline_variant">#E4E4E0</color>
-    <color name="pd_inverse_surface">#1C1C1B</color>
-    <color name="pd_inverse_on_surface">#F3F3F0</color>
+    <color name="pd_surface_container_high">#F4EEE4</color>
+    <color name="pd_surface_container_highest">#ECE4D6</color>
+    <color name="pd_on_surface">#1F1A14</color>
+    <color name="pd_on_surface_variant">#6B6254</color>
+    <color name="pd_outline">#B8AD9B</color>
+    <color name="pd_outline_variant">#E8DFD0</color>
+    <color name="pd_inverse_surface">#2A241C</color>
+    <color name="pd_inverse_on_surface">#F7F1E6</color>
 </resources>

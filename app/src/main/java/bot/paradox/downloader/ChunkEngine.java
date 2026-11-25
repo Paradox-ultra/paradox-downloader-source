@@ -23,8 +23,15 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Downloads one file, in parallel 2 MB pieces when the server supports byte
- * ranges, or as a single stream otherwise.
+ * Downloads one file, in parallel pieces when the server supports byte ranges,
+ * or as a single stream otherwise.
+ *
+ * <p>Speed (v4.6): pieces are sized to the file (1-8 MB) so a connection
+ * streams for seconds instead of a fraction of one; finished connections go
+ * back to the keep-alive pool instead of being closed, so the next piece skips
+ * the TCP/TLS handshake and slow-start; and the resume journal is written at
+ * most every two seconds without a disk sync (it used to sync after every
+ * piece while holding the lock that every other connection needs).
  *
  * <p>Fixes from v4.2: the resume journal is keyed to the job and file size, not
  * to the redirected URL (which changes on every start for most CDNs, so resume
@@ -33,7 +40,9 @@ import java.util.concurrent.atomic.AtomicReference;
  * it had counted.
  */
 final class ChunkEngine {
-    static final int PIECE = 2 * 1024 * 1024;
+    private static final int MIN_PIECE = 1024 * 1024, MAX_PIECE = 8 * 1024 * 1024, STEP = 256 * 1024;
+    private static final int BUF = 128 * 1024;
+    private static final long JOURNAL_EVERY_NS = 2_000_000_000L;
     private static final int ATTEMPTS = 5;
 
     /** Set by Pause/Cancel. Shared with the caller so one flag stops every stage of a job. */
@@ -44,6 +53,8 @@ final class ChunkEngine {
     volatile long total = -1;
     /** True once a single-stream download has started; such downloads can't resume. */
     volatile boolean restartsOnResume;
+    private volatile int piece = MIN_PIECE;
+    private long lastJournal;
 
     ChunkEngine() {
         this(new AtomicBoolean());
@@ -68,13 +79,21 @@ final class ChunkEngine {
 
     // ---- multi-connection ----------------------------------------------------
 
+    /** About six pieces per connection, so the tail is short and every stream runs long. */
+    static int pieceSize(long size, int connections) {
+        long p = size / (Math.max(1, connections) * 6L);
+        p = (p + STEP - 1) / STEP * STEP;
+        return (int) Math.max(MIN_PIECE, Math.min(MAX_PIECE, p));
+    }
+
     private void segmented(Http.Info info, File part, File journal, String key, int connections) throws Exception {
         final long size = info.size;
         total = size;
-        long count = (size + PIECE - 1) / PIECE;
+        piece = pieceSize(size, connections);
+        long count = (size + piece - 1) / piece;
         if (count <= 0 || count > Integer.MAX_VALUE / 2) throw new IOException("File too large");
         final int pieces = (int) count;
-        final String journalKey = key + "\n" + size;
+        final String journalKey = key + "\n" + size + "\n" + piece;
         final BitSet have = new BitSet(pieces);
 
         if (journal.exists() && part.exists() && part.length() == size) readJournal(journal, journalKey, pieces, have);
@@ -96,7 +115,7 @@ final class ChunkEngine {
             try {
                 for (int t = 0; t < threads; t++) {
                     futures.add(pool.submit(() -> {
-                        byte[] buf = new byte[64 * 1024];
+                        byte[] buf = new byte[BUF];
                         while (!halted() && failure.get() == null) {
                             int idx = next.getAndIncrement();
                             if (idx >= pieces) return;
@@ -115,10 +134,10 @@ final class ChunkEngine {
                             if (halted()) return;
                             synchronized (journalLock) {
                                 have.set(idx);
-                                try {
-                                    writeJournal(journal, journalKey, pieces, have);
-                                } catch (IOException ignored) {
-                                    // Losing a journal write only costs a re-download of that piece.
+                                long now = System.nanoTime();
+                                if (now - lastJournal > JOURNAL_EVERY_NS) {
+                                    lastJournal = now;
+                                    saveJournal(journal, journalKey, pieces, have);
                                 }
                             }
                         }
@@ -127,6 +146,9 @@ final class ChunkEngine {
                 for (Future<?> f : futures) f.get();
             } finally {
                 pool.shutdownNow();
+                synchronized (journalLock) {
+                    saveJournal(journal, journalKey, pieces, have); // so a pause or crash keeps every finished piece
+                }
             }
 
             Exception e = failure.get();
@@ -140,10 +162,11 @@ final class ChunkEngine {
     }
 
     private void fetchPiece(Http.Info info, FileChannel ch, int idx, long size, byte[] buf) throws Exception {
-        final long start = (long) idx * PIECE;
-        final long end = Math.min(size - 1, start + PIECE - 1);
+        final long start = (long) idx * piece;
+        final long end = Math.min(size - 1, start + piece - 1);
         for (int attempt = 1; ; attempt++) {
             long counted = 0;
+            boolean clean = false;
             HttpURLConnection c = null;
             try {
                 c = Http.open(info.url, "GET", "bytes=" + start + "-" + end, info.cookie, info.referer);
@@ -170,19 +193,28 @@ final class ChunkEngine {
                     }
                 }
                 if (pos != end + 1) throw new IOException("Connection dropped");
+                clean = true; // body fully read: closing the stream returns the socket to the keep-alive pool
                 return;
             } catch (IOException e) {
                 done.addAndGet(-counted);
                 if (attempt >= ATTEMPTS || halted()) throw e;
                 Thread.sleep(400L * attempt * attempt);
             } finally {
-                if (c != null) c.disconnect();
+                if (c != null && !clean) c.disconnect();
             }
         }
     }
 
-    private static long pieceLength(int idx, long size) {
-        return Math.min(PIECE, size - (long) idx * PIECE);
+    private long pieceLength(int idx, long size) {
+        return Math.min(piece, size - (long) idx * piece);
+    }
+
+    private static void saveJournal(File journal, String key, int pieces, BitSet have) {
+        try {
+            writeJournal(journal, key, pieces, have);
+        } catch (IOException ignored) {
+            // Losing a journal write only costs a re-download of those pieces.
+        }
     }
 
     private static void readJournal(File journal, String key, int pieces, BitSet have) {
@@ -206,7 +238,6 @@ final class ChunkEngine {
             out.writeInt(bits.length);
             out.write(bits);
             out.flush();
-            fos.getFD().sync();
         }
         if (!tmp.renameTo(journal)) throw new IOException("Journal update failed");
     }
@@ -223,7 +254,7 @@ final class ChunkEngine {
             long got = 0;
             try (InputStream in = c.getInputStream();
                  FileOutputStream out = new FileOutputStream(part, false)) {
-                byte[] buf = new byte[64 * 1024];
+                byte[] buf = new byte[BUF];
                 int n;
                 while ((n = in.read(buf)) != -1) {
                     if (stop.get()) throw new InterruptedException("Paused");

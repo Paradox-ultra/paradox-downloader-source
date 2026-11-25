@@ -70,8 +70,8 @@
         <item name="colorSurfaceContainerHigh">#FF161616</item>
         <item name="colorSurfaceContainerHighest">#FF1E1E1E</item>
         <item name="colorOutlineVariant">#FF1C1C1C</item>
-        <item name="colorPrimaryContainer">#FF1E1E1E</item>
-        <item name="colorSecondaryContainer">#FF181818</item>
+        <item name="colorPrimaryContainer">#FF33140A</item>
+        <item name="colorSecondaryContainer">#FF0B2E2A</item>
         <item name="android:windowBackground">#FF000000</item>
     </style>
 
@@ -191,7 +191,28 @@
         <item name="shapeAppearance">@style/Shape.Ultra.M</item>
     </style>
 
-    <!-- Filter pills: black when selected, soft grey otherwise -->
+    <!-- Bottom navigation: flat, with a vermilion-tinted pill behind the selected tab -->
+    <style name="Widget.Ultra.BottomNav" parent="Widget.Material3.BottomNavigationView">
+        <item name="backgroundTint">?attr/colorSurface</item>
+        <item name="elevation">0dp</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.Ultra.NavIndicator</item>
+        <item name="itemIconTint">@color/nav_item</item>
+        <item name="itemTextColor">@color/nav_item</item>
+        <item name="labelVisibilityMode">labeled</item>
+    </style>
+    <style name="Widget.Ultra.NavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">?attr/colorPrimaryContainer</item>
+    </style>
+
+    <!-- A row on the home screen: coloured tile, title, one line of detail -->
+    <style name="Ultra.FeatureTile" parent="">
+        <item name="android:layout_width">44dp</item>
+        <item name="android:layout_height">44dp</item>
+        <item name="android:padding">11dp</item>
+        <item name="android:background">@drawable/tile</item>
+    </style>
+
+    <!-- Filter pills: accent when selected, soft tint otherwise -->
     <style name="Widget.Ultra.FilterChip" parent="Widget.Material3.Chip.Filter">
         <item name="chipBackgroundColor">@color/chip_bg</item>
         <item name="android:textColor">@color/chip_text</item>
