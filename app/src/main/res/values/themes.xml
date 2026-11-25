@@ -3,20 +3,27 @@
     <style name="Theme.Paradox" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/pd_primary</item>
         <item name="colorOnPrimary">@color/pd_on_primary</item>
-        <item name="colorPrimaryContainer">@color/pd_primary_container</item>
-        <item name="colorOnPrimaryContainer">@color/pd_on_primary_container</item>
-        <item name="colorSecondary">@color/pd_secondary</item>
-        <item name="colorOnSecondary">@color/pd_on_secondary</item>
-        <item name="colorSecondaryContainer">@color/pd_secondary_container</item>
-        <item name="colorOnSecondaryContainer">@color/pd_on_secondary_container</item>
-        <item name="colorTertiary">@color/pd_tertiary</item>
-        <item name="colorTertiaryContainer">@color/pd_tertiary_container</item>
-        <item name="colorOnTertiaryContainer">@color/pd_on_tertiary_container</item>
+        <item name="colorPrimaryInverse">@color/pd_inverse_primary</item>
+        <item name="colorPrimaryContainer">@color/pd_tonal</item>
+        <item name="colorOnPrimaryContainer">@color/pd_on_tonal</item>
+        <item name="colorSecondary">@color/pd_primary</item>
+        <item name="colorOnSecondary">@color/pd_on_primary</item>
+        <item name="colorSecondaryContainer">@color/pd_tonal</item>
+        <item name="colorOnSecondaryContainer">@color/pd_on_tonal</item>
+        <item name="colorTertiary">@color/pd_primary</item>
+        <item name="colorOnTertiary">@color/pd_on_primary</item>
+        <item name="colorTertiaryContainer">@color/pd_tonal</item>
+        <item name="colorOnTertiaryContainer">@color/pd_on_tonal</item>
         <item name="colorError">@color/pd_error</item>
+        <item name="colorOnError">@color/pd_on_error</item>
         <item name="colorErrorContainer">@color/pd_error_container</item>
         <item name="colorOnErrorContainer">@color/pd_on_error_container</item>
         <item name="android:colorBackground">@color/pd_surface</item>
+        <item name="colorOnBackground">@color/pd_on_surface</item>
         <item name="colorSurface">@color/pd_surface</item>
+        <item name="colorSurfaceDim">@color/pd_surface_dim</item>
+        <item name="colorSurfaceBright">@color/pd_surface_bright</item>
+        <item name="colorSurfaceVariant">@color/pd_surface_container_high</item>
         <item name="colorSurfaceContainerLowest">@color/pd_surface_container_lowest</item>
         <item name="colorSurfaceContainerLow">@color/pd_surface_container_low</item>
         <item name="colorSurfaceContainer">@color/pd_surface_container</item>
@@ -28,6 +35,8 @@
         <item name="colorOutlineVariant">@color/pd_outline_variant</item>
         <item name="colorSurfaceInverse">@color/pd_inverse_surface</item>
         <item name="colorOnSurfaceInverse">@color/pd_inverse_on_surface</item>
+        <!-- Elevated surfaces would otherwise be tinted with the primary colour. -->
+        <item name="elevationOverlayEnabled">false</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
 
@@ -48,7 +57,7 @@
         <item name="textAppearanceLabelMedium">@style/TextAppearance.Ultra.LabelMedium</item>
         <item name="textAppearanceLabelSmall">@style/TextAppearance.Ultra.LabelSmall</item>
 
-        <!-- Soft, generous corners -->
+        <!-- Tight, consistent corners: 12dp on buttons, fields and cards -->
         <item name="shapeAppearanceCornerExtraSmall">@style/Shape.Ultra.XS</item>
         <item name="shapeAppearanceCornerSmall">@style/Shape.Ultra.S</item>
         <item name="shapeAppearanceCornerMedium">@style/Shape.Ultra.M</item>
@@ -60,20 +69,26 @@
         <item name="snackbarStyle">@style/Widget.Ultra.Snackbar</item>
     </style>
 
-    <!-- AMOLED black: pure-black surfaces, faint grey layers for cards and sheets. -->
+    <!-- AMOLED black: pure-black surfaces, faint grey layers for fields, cards and sheets. -->
     <style name="ThemeOverlay.Ultra.Amoled" parent="">
         <item name="android:colorBackground">#FF000000</item>
         <item name="colorSurface">#FF000000</item>
+        <item name="colorSurfaceDim">#FF000000</item>
         <item name="colorSurfaceContainerLowest">#FF000000</item>
         <item name="colorSurfaceContainerLow">#FF080808</item>
         <item name="colorSurfaceContainer">#FF0E0E0E</item>
         <item name="colorSurfaceContainerHigh">#FF161616</item>
         <item name="colorSurfaceContainerHighest">#FF1E1E1E</item>
-        <item name="colorOutlineVariant">#FF1C1C1C</item>
-        <item name="colorPrimaryContainer">#FF33140A</item>
-        <item name="colorSecondaryContainer">#FF0B2E2A</item>
+        <item name="colorSurfaceVariant">#FF161616</item>
+        <item name="colorOutlineVariant">#FF222222</item>
+        <item name="colorPrimaryContainer">#FF1C1C1C</item>
+        <item name="colorSecondaryContainer">#FF1C1C1C</item>
+        <item name="colorTertiaryContainer">#FF1C1C1C</item>
         <item name="android:windowBackground">#FF000000</item>
     </style>
+
+    <!-- The crash screen uses framework themes only, so it opens even if the app theme is broken. -->
+    <style name="Theme.Crash" parent="@android:style/Theme.Material.Light.NoActionBar" />
 
     <!-- Type -->
     <style name="TextAppearance.Ultra.DisplaySmall" parent="TextAppearance.Material3.DisplaySmall">
@@ -144,23 +159,23 @@
     <!-- Shapes -->
     <style name="Shape.Ultra.XS" parent="">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">8dp</item>
+        <item name="cornerSize">4dp</item>
     </style>
     <style name="Shape.Ultra.S" parent="">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">12dp</item>
+        <item name="cornerSize">8dp</item>
     </style>
     <style name="Shape.Ultra.M" parent="">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">18dp</item>
+        <item name="cornerSize">12dp</item>
     </style>
     <style name="Shape.Ultra.L" parent="">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">24dp</item>
+        <item name="cornerSize">12dp</item>
     </style>
     <style name="Shape.Ultra.XL" parent="">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">32dp</item>
+        <item name="cornerSize">16dp</item>
     </style>
 
     <!-- Dialogs and sheets -->
@@ -176,14 +191,10 @@
         <item name="backgroundTint">?attr/colorSurfaceContainer</item>
         <item name="shapeAppearance">@style/Shape.Ultra.SheetTop</item>
     </style>
-    <style name="Shape.Ultra.Pill" parent="">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">50%</item>
-    </style>
     <style name="Shape.Ultra.SheetTop" parent="">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSizeTopLeft">32dp</item>
-        <item name="cornerSizeTopRight">32dp</item>
+        <item name="cornerSizeTopLeft">16dp</item>
+        <item name="cornerSizeTopRight">16dp</item>
         <item name="cornerSizeBottomLeft">0dp</item>
         <item name="cornerSizeBottomRight">0dp</item>
     </style>
@@ -191,51 +202,36 @@
         <item name="shapeAppearance">@style/Shape.Ultra.M</item>
     </style>
 
-    <!-- Bottom navigation: flat, with a vermilion-tinted pill behind the selected tab -->
+    <!-- Bottom navigation: flat, no pill; the selected tab is simply full-strength ink -->
     <style name="Widget.Ultra.BottomNav" parent="Widget.Material3.BottomNavigationView">
         <item name="backgroundTint">?attr/colorSurface</item>
         <item name="elevation">0dp</item>
-        <item name="itemActiveIndicatorStyle">@style/Widget.Ultra.NavIndicator</item>
         <item name="itemIconTint">@color/nav_item</item>
         <item name="itemTextColor">@color/nav_item</item>
+        <item name="itemRippleColor">@color/nav_ripple</item>
         <item name="labelVisibilityMode">labeled</item>
-    </style>
-    <style name="Widget.Ultra.NavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
-        <item name="android:color">?attr/colorPrimaryContainer</item>
-    </style>
-
-    <!-- A row on the home screen: coloured tile, title, one line of detail -->
-    <style name="Ultra.FeatureTile" parent="">
-        <item name="android:layout_width">44dp</item>
-        <item name="android:layout_height">44dp</item>
-        <item name="android:padding">11dp</item>
-        <item name="android:background">@drawable/tile</item>
+        <item name="itemTextAppearanceInactive">@style/TextAppearance.Ultra.LabelMedium</item>
+        <item name="itemTextAppearanceActive">@style/TextAppearance.Ultra.NavActive</item>
+        <item name="itemTextAppearanceActiveBoldEnabled">false</item>
     </style>
 
-    <!-- Filter pills: accent when selected, soft tint otherwise -->
+    <style name="TextAppearance.Ultra.NavActive" parent="TextAppearance.Ultra.LabelMedium">
+        <item name="android:fontFamily">@font/inter_semibold</item>
+        <item name="fontFamily">@font/inter_semibold</item>
+    </style>
+
+    <!-- Filter chips: ink when selected, outlined otherwise -->
     <style name="Widget.Ultra.FilterChip" parent="Widget.Material3.Chip.Filter">
         <item name="chipBackgroundColor">@color/chip_bg</item>
         <item name="android:textColor">@color/chip_text</item>
-        <item name="chipStrokeWidth">0dp</item>
+        <item name="chipStrokeColor">@color/chip_stroke</item>
+        <item name="chipStrokeWidth">1dp</item>
         <item name="checkedIconVisible">false</item>
-        <item name="chipCornerRadius">100dp</item>
+        <item name="chipCornerRadius">8dp</item>
         <item name="chipMinHeight">36dp</item>
         <item name="android:textAppearance">@style/TextAppearance.Ultra.LabelLarge</item>
         <item name="chipStartPadding">6dp</item>
         <item name="chipEndPadding">6dp</item>
-    </style>
-
-    <!-- "Works with" tags under the link box -->
-    <style name="Ultra.Tag" parent="">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginEnd">6dp</item>
-        <item name="android:background">@drawable/pill</item>
-        <item name="android:backgroundTint">?attr/colorSurfaceContainerHigh</item>
-        <item name="android:paddingHorizontal">10dp</item>
-        <item name="android:paddingVertical">5dp</item>
-        <item name="android:textAppearance">@style/TextAppearance.Ultra.LabelMedium</item>
-        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
     </style>
 
     <!-- File-type tile on download cards -->

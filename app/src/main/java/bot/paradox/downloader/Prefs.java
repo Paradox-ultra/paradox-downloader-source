@@ -18,7 +18,7 @@ final class Prefs {
     }
 
     static int connections(Context c) {
-        return sp(c).getInt("connections", 8);
+        return sp(c).getInt("connections", 16);
     }
 
     static void connections(Context c, int v) {

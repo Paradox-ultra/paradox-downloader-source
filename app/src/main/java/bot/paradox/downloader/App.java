@@ -6,6 +6,7 @@ public final class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        CrashReport.install(this); // first, so a crash in anything below is recorded too
         // Keep up to 32 idle sockets so every download connection can be reused for its next piece
         // (the platform default of 5 would close most of them). Must be set before the first request.
         System.setProperty("http.maxConnections", "32");

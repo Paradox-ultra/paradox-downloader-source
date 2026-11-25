@@ -141,7 +141,7 @@ final class MediaSheet {
         FrameLayout frame = new FrameLayout(a);
         ShapeableImageView img = new ShapeableImageView(a);
         img.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        img.setShapeAppearanceModel(ShapeAppearanceModel.builder().setAllCornerSizes(dp(22)).build());
+        img.setShapeAppearanceModel(ShapeAppearanceModel.builder().setAllCornerSizes(dp(12)).build());
         img.setBackgroundColor(color(com.google.android.material.R.attr.colorSurfaceContainerHigh));
         int width = a.getResources().getDisplayMetrics().widthPixels - dp(40);
         frame.addView(img, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Math.min(width * 9 / 16, dp(260))));
@@ -234,6 +234,7 @@ final class MediaSheet {
     private MaterialButton toggle(String text, int icon) {
         MaterialButton b = new MaterialButton(a, null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
         b.setId(View.generateViewId());
+        b.setCornerRadius(dp(12));
         b.setText(text);
         b.setIconResource(icon);
         b.setIconGravity(MaterialButton.ICON_GRAVITY_TEXT_START);
@@ -260,7 +261,7 @@ final class MediaSheet {
     private void label(String text) {
         TextView l = new TextView(a);
         l.setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_LabelLarge);
-        l.setTextColor(color(androidx.appcompat.R.attr.colorPrimary));
+        l.setTextColor(color(com.google.android.material.R.attr.colorOnSurfaceVariant));
         l.setText(text);
         l.setPadding(0, dp(20), 0, dp(4));
         box.addView(l);
@@ -298,7 +299,7 @@ final class MediaSheet {
 
     private void button(String text, Runnable go) {
         MaterialButton b = new MaterialButton(a);
-        b.setCornerRadius(dp(28));
+        b.setCornerRadius(dp(12));
         b.setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_TitleMedium);
         b.setTextColor(color(com.google.android.material.R.attr.colorOnPrimary));
         b.setText(text);

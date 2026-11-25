@@ -20,7 +20,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Files shared into the app (for example from Telegram: select messages, Share, Downloader Ultra).
+ * Files shared into the app, one or several at a time (from a file manager or gallery; Telegram
+ * only offers Share for a single file, and Forward for several).
  * Each file is copied into Download/Downloader Ultra and listed as a finished download.
  */
 final class ShareImport {

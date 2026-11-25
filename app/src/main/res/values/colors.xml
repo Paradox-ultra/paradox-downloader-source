@@ -1,33 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Downloader Ultra: warm paper, ink text, one vermilion accent, teal and mustard as supporting colours. -->
+    <!-- Downloader Ultra: white, grey and ink. The only hue is error red, which means something went wrong. -->
     <color name="launcher_bg">#232323</color>
 
-    <color name="pd_primary">#D8431F</color>
+    <color name="pd_primary">#141414</color>
     <color name="pd_on_primary">#FFFFFF</color>
-    <color name="pd_primary_container">#FFE1D6</color>
-    <color name="pd_on_primary_container">#4A1304</color>
-    <color name="pd_secondary">#0E7C73</color>
-    <color name="pd_on_secondary">#FFFFFF</color>
-    <color name="pd_secondary_container">#D2F0EB</color>
-    <color name="pd_on_secondary_container">#00302B</color>
-    <color name="pd_tertiary">#8A5A00</color>
-    <color name="pd_tertiary_container">#FBEBBE</color>
-    <color name="pd_on_tertiary_container">#3A2900</color>
+    <color name="pd_inverse_primary">#F2F2F2</color>
+    <color name="pd_tonal">#EDEDED</color>
+    <color name="pd_on_tonal">#141414</color>
     <color name="pd_error">#B3261E</color>
+    <color name="pd_on_error">#FFFFFF</color>
     <color name="pd_error_container">#F9DEDC</color>
     <color name="pd_on_error_container">#410E0B</color>
 
-    <color name="pd_surface">#FBF7F0</color>
+    <color name="pd_surface">#FFFFFF</color>
+    <color name="pd_surface_dim">#DEDEDE</color>
+    <color name="pd_surface_bright">#FFFFFF</color>
     <color name="pd_surface_container_lowest">#FFFFFF</color>
-    <color name="pd_surface_container_low">#FFFCF7</color>
-    <color name="pd_surface_container">#FFFFFF</color>
-    <color name="pd_surface_container_high">#F4EEE4</color>
-    <color name="pd_surface_container_highest">#ECE4D6</color>
-    <color name="pd_on_surface">#1F1A14</color>
-    <color name="pd_on_surface_variant">#6B6254</color>
-    <color name="pd_outline">#B8AD9B</color>
-    <color name="pd_outline_variant">#E8DFD0</color>
-    <color name="pd_inverse_surface">#2A241C</color>
-    <color name="pd_inverse_on_surface">#F7F1E6</color>
+    <color name="pd_surface_container_low">#FAFAFA</color>
+    <color name="pd_surface_container">#F6F6F6</color>
+    <color name="pd_surface_container_high">#F0F0F0</color>
+    <color name="pd_surface_container_highest">#E8E8E8</color>
+    <color name="pd_on_surface">#141414</color>
+    <color name="pd_on_surface_variant">#5C5C5C</color>
+    <color name="pd_outline">#8A8A8A</color>
+    <color name="pd_outline_variant">#E3E3E3</color>
+    <color name="pd_inverse_surface">#222222</color>
+    <color name="pd_inverse_on_surface">#F5F5F5</color>
 </resources>

@@ -11,6 +11,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.view.View;
 import android.webkit.CookieManager;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.URLUtil;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -151,6 +152,15 @@ public final class BrowserActivity extends AppCompatActivity {
                 hideForSite(view, url);
                 if (blockOn && startScript == null && AdBlock.script() != null) view.evaluateJavascript(AdBlock.script(), null);
             }
+
+            @Override
+            public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+                // The page ran the phone out of memory (or the web engine crashed). Unless this is
+                // handled, Android closes the whole app and its downloads with it.
+                Toast.makeText(BrowserActivity.this, "The page stopped working and was closed", Toast.LENGTH_LONG).show();
+                finish();
+                return true;
+            }
         });
         web.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -159,8 +169,8 @@ public final class BrowserActivity extends AppCompatActivity {
                 final WebView tmp = new WebView(BrowserActivity.this);
                 final AtomicBoolean seen = new AtomicBoolean();
                 tmp.setWebViewClient(new WebViewClient() {
-                    @Override
-                    public WebResourceResponse shouldInterceptRequest(WebView w, WebResourceRequest r) {
+                    /** The pop-up's address, from whichever callback sees it first. */
+                    private void learn(WebResourceRequest r) {
                         String u = r.getUrl().toString();
                         if (r.isForMainFrame() && u.startsWith("http") && seen.compareAndSet(false, true)) {
                             main.post(() -> {
@@ -168,11 +178,24 @@ public final class BrowserActivity extends AppCompatActivity {
                                 discard(tmp);
                             });
                         }
+                    }
+
+                    @Override
+                    public WebResourceResponse shouldInterceptRequest(WebView w, WebResourceRequest r) {
+                        learn(r);
                         return empty();
                     }
 
                     @Override
                     public boolean shouldOverrideUrlLoading(WebView w, WebResourceRequest r) {
+                        // Usually called first; cancelling here means no request ever follows.
+                        learn(r);
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onRenderProcessGone(WebView w, RenderProcessGoneDetail detail) {
+                        discard(w);
                         return true;
                     }
                 });
@@ -323,6 +346,7 @@ public final class BrowserActivity extends AppCompatActivity {
         shieldIcon();
         if (blockOn) {
             AdBlock.whenReady(this, () -> {
+                if (isDestroyed()) return; // the browser was closed while the lists loaded
                 installStartScript();
                 web.reload();
             });
@@ -342,6 +366,7 @@ public final class BrowserActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         web.stopLoading();
+        ((android.view.ViewGroup) web.getParent()).removeView(web); // detach before destroying
         web.destroy();
         if (isFinishing()) AdBlock.release();
         super.onDestroy();

@@ -39,6 +39,7 @@ import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.color.MaterialColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -65,7 +66,7 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
     private RecyclerView list;
     private View empty;
     private TextView emptyTitle, emptyBody, stats;
-    private View tips, paneHome, paneDownloads;
+    private View paneHome, paneDownloads;
     private BottomNavigationView nav;
     private int tab; // 0 = Home, 1 = Downloads
     private ExtendedFloatingActionButton fab;
@@ -95,6 +96,12 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
     protected void onCreate(Bundle state) {
         EdgeToEdge.enable(this);
         super.onCreate(state);
+        // The last run crashed: show what happened first, on a screen that doesn't depend on this one.
+        if (CrashReport.pending(this)) {
+            CrashActivity.show(this, getIntent());
+            finish();
+            return;
+        }
         Prefs.applyAmoled(this);
         setContentView(R.layout.activity_main);
         store = JobStore.get(this);
@@ -102,10 +109,16 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
         paneHome = findViewById(R.id.pane_home);
         paneDownloads = findViewById(R.id.pane_downloads);
         nav = findViewById(R.id.nav);
+        nav.setItemActiveIndicatorEnabled(false);
         nav.setOnItemSelectedListener(item -> {
-            showTab(item.getItemId() == R.id.nav_downloads ? 1 : 0);
+            showPane(item.getItemId() == R.id.nav_downloads ? 1 : 0);
             return true;
         });
+        BadgeDrawable count = nav.getOrCreateBadge(R.id.nav_downloads);
+        count.setBackgroundColor(MaterialColors.getColor(nav,
+                com.google.android.material.R.attr.colorOnSurfaceVariant));
+        count.setBadgeTextColor(MaterialColors.getColor(nav, com.google.android.material.R.attr.colorSurface));
+        count.setVisible(false);
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -119,7 +132,6 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
         });
         findViewById(R.id.settings).setOnClickListener(v -> SettingsSheet.show(this));
         stats = findViewById(R.id.stats);
-        tips = findViewById(R.id.tips);
         fab = findViewById(R.id.fab);
         // One tap: take the link from the clipboard and start.
         fab.setOnClickListener(v -> {
@@ -181,7 +193,9 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
         });
 
         showTab(state == null ? 0 : state.getInt("tab", 0));
-        receive(getIntent());
+        // Only on a fresh start: after a theme change or rotation the same intent is still attached,
+        // and handling it again would download or save the shared files a second time.
+        if (state == null) receive(getIntent());
         if (state == null) {
             UpdateChecker.maybeCheck(this, shown -> {
                 if (!shown) ChannelCard.maybeShow(this);
@@ -195,13 +209,23 @@ public final class MainActivity extends AppCompatActivity implements JobStore.Li
         out.putInt("tab", tab);
     }
 
-    /** Home (paste a link) or Downloads (the list). */
+    /**
+     * Switches to Home (paste a link) or Downloads (the list) and keeps the bottom bar in step.
+     *
+     * <p>The bar calls its listener <em>before</em> it records the new selection, so the listener
+     * must only call {@link #showPane}. Calling this method from it recursed until the stack
+     * overflowed (the 4.6.0 / 4.6.1 crash).
+     */
     private void showTab(int t) {
+        int want = t == 1 ? R.id.nav_downloads : R.id.nav_home;
+        if (nav.getSelectedItemId() != want) nav.setSelectedItemId(want); // the listener shows the pane
+        else showPane(t);
+    }
+
+    private void showPane(int t) {
         tab = t;
         paneHome.setVisibility(t == 0 ? View.VISIBLE : View.GONE);
         paneDownloads.setVisibility(t == 1 ? View.VISIBLE : View.GONE);
-        int want = t == 1 ? R.id.nav_downloads : R.id.nav_home;
-        if (nav.getSelectedItemId() != want) nav.setSelectedItemId(want);
     }
 
     @Override

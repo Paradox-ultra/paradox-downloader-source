@@ -111,7 +111,7 @@ final class JobAdapter extends ListAdapter<Job, JobAdapter.VH> {
             name.setText(j.name == null || j.name.isEmpty() ? hostOf(j) : j.name);
             String e = Fmt.ext(j.name);
             ext.setText(e.isEmpty() ? "FILE" : e.toUpperCase(Locale.ROOT));
-            tint(j, e);
+            tint(j);
             // Video thumbnail or cover art when there is one; the file-type tile otherwise.
             if (j.thumb != null && !j.thumb.equals(thumb.getTag(R.id.thumb_url))) {
                 thumb.setVisibility(View.GONE);
@@ -169,24 +169,13 @@ final class JobAdapter extends ListAdapter<Job, JobAdapter.VH> {
             pct.setAlpha(Job.PAUSED.equals(j.state) ? 0.5f : 1f);
         }
 
-        private void tint(Job j, String e) {
-            int bg, fg;
-            if (Job.FAILED.equals(j.state)) {
-                bg = com.google.android.material.R.attr.colorErrorContainer;
-                fg = com.google.android.material.R.attr.colorOnErrorContainer;
-            } else if (e.matches("mp4|mkv|webm|mov|avi|m4v|3gp|ts")) {
-                bg = com.google.android.material.R.attr.colorPrimaryContainer;
-                fg = com.google.android.material.R.attr.colorOnPrimaryContainer;
-            } else if (e.matches("mp3|m4a|aac|flac|wav|ogg|opus")) {
-                bg = com.google.android.material.R.attr.colorSecondaryContainer;
-                fg = com.google.android.material.R.attr.colorOnSecondaryContainer;
-            } else if (e.matches("apk|zip|rar|7z|tar|gz|iso|exe|xapk|apks")) {
-                bg = com.google.android.material.R.attr.colorTertiaryContainer;
-                fg = com.google.android.material.R.attr.colorOnTertiaryContainer;
-            } else {
-                bg = com.google.android.material.R.attr.colorSurfaceContainerHighest;
-                fg = com.google.android.material.R.attr.colorOnSurfaceVariant;
-            }
+        /** Every file type gets the same grey tile; red is kept for a download that failed. */
+        private void tint(Job j) {
+            boolean failed = Job.FAILED.equals(j.state);
+            int bg = failed ? com.google.android.material.R.attr.colorErrorContainer
+                    : com.google.android.material.R.attr.colorSurfaceContainerHigh;
+            int fg = failed ? com.google.android.material.R.attr.colorOnErrorContainer
+                    : com.google.android.material.R.attr.colorOnSurfaceVariant;
             ext.setBackgroundTintList(ColorStateList.valueOf(MaterialColors.getColor(ext, bg)));
             ext.setTextColor(MaterialColors.getColor(ext, fg));
         }

@@ -332,7 +332,7 @@ final class MediaWorker {
         r.addOption("--continue");
         r.addOption("-P", dir.getAbsolutePath());
         r.addOption("-o", "%(title).150B [%(id)s].%(ext)s");
-        r.addOption("--concurrent-fragments", String.valueOf(Math.max(1, Math.min(8, connections))));
+        r.addOption("--concurrent-fragments", String.valueOf(Math.max(1, Math.min(16, connections))));
         if (audioOnly) {
             r.addOption("-f", "m4a".equals(spec.optString("fmt")) ? "ba[ext=m4a]/ba/b" : "ba/b");
             // Extras are separate files: embedding needs Python modules some sites' formats lack.
