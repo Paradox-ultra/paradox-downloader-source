@@ -33,8 +33,18 @@ for e in root.iter('node'):
         print((x1+x2)//2,(y1+y2)//2); break
 PY
 }
+# Two one-time prompts can cover the screen at any moment: the channel invite on launch ("Later")
+# and, after the first download, the background-running question ("Not now").
+dismiss_prompts() {
+  local p xy
+  for p in "Later" "Not now"; do
+    xy=$(find_xy exact "$p")
+    if [ -n "$xy" ]; then echo "(dismissed a prompt: $p)"; adb shell input tap $xy; sleep 2; fi
+  done
+}
 tap() { # tap <mode> <text>
   local xy; xy=$(find_xy "$1" "$2")
+  if [ -z "$xy" ]; then dismiss_prompts; xy=$(find_xy "$1" "$2"); fi
   if [ -z "$xy" ]; then echo "-- not on screen: $2"; shot "missing-$(echo "$2" | tr -c 'A-Za-z0-9' _)"; return 1; fi
   adb shell input tap $xy; sleep 2
 }
@@ -74,9 +84,6 @@ tap exact Home
 tap id input && adb shell input text "https://proof.ovh.net/files/10Mb.dat"
 shot link-typed
 tap exact Download; sleep 15; shot after-download; check "start download"
-# After the first download the app asks once about running in the background. The dialog covers
-# the whole screen, so every later tap would miss.
-visible exact "Not now" && tap exact "Not now"
 tap exact Downloads; shot list-after-download; check "list after download"
 visible contains "10Mb" && echo "download is listed" || echo "-- download NOT listed"
 
